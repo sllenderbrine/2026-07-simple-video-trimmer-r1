@@ -1,0 +1,51 @@
+.access-menu-container {
+    position: absolute;
+    background-color: rgb(10, 10, 10);
+    width: 100vw;
+    height: 34px;
+    -webkit-app-region: drag;
+    color: white;
+    font-family: Arial;
+    font-size: 14px;
+    z-index: 100;
+}
+
+.access-menu-button {
+    position: absolute;
+    height: 34px;
+    border: none;
+    user-select: none;
+    padding: 0;
+    background-color: transparent;
+    cursor: pointer;
+    -webkit-app-region: no-drag;
+    transition: background-color 0.1s ease;
+}
+
+.access-menu-button:hover {
+    background-color: rgb(60, 60, 60);
+}
+
+.access-menu-button-danger:hover {
+    background-color: rgb(226, 18, 18);
+}
+
+.access-menu-title {
+    position: absolute;
+    height: 34px;
+    align-content: center;
+    text-align: center;
+    user-select: none;
+    pointer-events: none;
+}
+
+.access-menu-icon {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 50px;
+    height: 34px;
+    user-select: none;
+    pointer-events: none;
+    color: white;
+}

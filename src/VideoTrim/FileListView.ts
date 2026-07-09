@@ -1,4 +1,4 @@
-import { Canvas2dUtility, MathUtility } from "../VecLib/index.js";
+import { Canvas2dUtility, MathUtility, Signal } from "../VecLib/index.js";
 
 export enum FlvSortMethod {
     RECENT = 0,
@@ -7,6 +7,16 @@ export enum FlvSortMethod {
     Z_A = 3,
 };
 
+export type ListItem = {
+    file: {
+        path: string,
+        name: string,
+        modified: number
+    },
+    container: HTMLDivElement,
+    nameLabel: HTMLDivElement,
+    hasThumb: boolean,
+};
 
 export class FileListView {
     accessContainerEl: HTMLDivElement;
@@ -18,8 +28,9 @@ export class FileListView {
     processingFileSystem: boolean = false;
     videoLoadingId: number = 0;
     videoDirectory: string = "";
-    thumbUrls: string[] = [];
     sortMethod: FlvSortMethod = FlvSortMethod.RECENT;
+    visible: boolean = false;
+    videoOpenEvent: Signal<[item: ListItem]> = new Signal();
     constructor() {
         const accessContainer = document.createElement("div");
         this.accessContainerEl = accessContainer;
@@ -68,14 +79,10 @@ export class FileListView {
     _removeVideoList(container?: HTMLDivElement) {
         if(!this.videoListContainerEl)
             return;
-        this.videoListContainerEl.remove();
-        if(!container || this.videoListContainerEl == container)
+        if(!container || this.videoListContainerEl == container) {
+            this.videoListContainerEl.remove();
             delete this.videoListContainerEl;
-        for(let i=0; i<this.thumbUrls.length; i++) {
-            const url = this.thumbUrls[i]!;
-            URL.revokeObjectURL(url);
         }
-        this.thumbUrls = [];
     }
     async chooseDirectory() {
         if(this.processingFileSystem)
@@ -104,10 +111,15 @@ export class FileListView {
         this.videoListContainerEl = videoListContainer;
         this.containerEl.appendChild(videoListContainer);
         videoListContainer.classList.add("flv-list-container");
+        let thumbUrls: string[] = [];
         const checkValidity = () => {
             if(vlid === this.videoLoadingId)
                 return false;
             this._removeVideoList(videoListContainer);
+            for(let i=0; i<thumbUrls.length; i++) {
+                const url = thumbUrls[i]!;
+                URL.revokeObjectURL(url);
+            }
             return true;
         }
         const result = await window.fileApi.getDirectoryFileList(this.videoDirectory);
@@ -128,7 +140,7 @@ export class FileListView {
                 videoFiles.sort((a, b) => { return a.name.localeCompare(b.name); });
                 break;
         }
-        const listItems = [];
+        const listItems: ListItem[] = [];
         for(let i=0; i<videoFiles.length; i++) {
             const file = videoFiles[i]!;
 
@@ -139,12 +151,17 @@ export class FileListView {
             fileContainer.appendChild(fileNameLabel);
             fileNameLabel.classList.add("flv-list-file-name");
             fileNameLabel.textContent = file.name;
-            listItems.push({
+            const item: ListItem = {
                 file,
                 container: fileContainer,
                 nameLabel: fileNameLabel,
                 hasThumb: false,
-            });
+            }
+            listItems.push(item);
+
+            fileContainer.ondblclick = () => {
+                this.videoOpenEvent.fire(item);
+            };
 
             if(i % 10 === 0) {
                 await new Promise(res => setTimeout(res, 1));
@@ -160,7 +177,7 @@ export class FileListView {
         thumbCanvas.height = THUMB_HEIGHT;
         const ctx = Canvas2dUtility.get2dContext(thumbCanvas);
         while(true) {
-            let startIndex = Math.floor(videoListContainer.scrollTop / (THUMB_HEIGHT + THUMB_GAP)) * Math.floor((window.innerWidth - THUMB_GAP) / (THUMB_WIDTH + THUMB_GAP));
+            let startIndex = Math.floor(videoListContainer.scrollTop / (THUMB_HEIGHT + THUMB_GAP)) * Math.floor((videoListContainer.clientWidth - THUMB_GAP) / (THUMB_WIDTH + THUMB_GAP));
             let endIndex = MathUtility.pmod(startIndex - 1, listItems.length);
             let i = MathUtility.pmod(startIndex, listItems.length);
             while(true) {
@@ -187,7 +204,7 @@ export class FileListView {
                         if(!blob)
                             return;
                         url = URL.createObjectURL(blob);
-                        this.thumbUrls.push(url);
+                        thumbUrls.push(url);
                         res();
                     });
                 }
@@ -223,14 +240,25 @@ export class FileListView {
             item.container.appendChild(img);
             img.classList.add("flv-list-file-thumb");
             img.src = url!;
-            
+
             item.hasThumb = true;
 
+            while(!this.visible)
+                await new Promise(res => setTimeout(res, 500));
             await new Promise(res => setTimeout(res, 1));
             if(checkValidity()) return;
-
         }
         thumbVideo.remove();
         thumbCanvas.remove();
+    }
+    setVisible(v: boolean) {
+        this.visible = v;
+        if(v) {
+            this.containerEl.style.display = "grid";
+            this.accessContainerEl.style.display = "flex";
+        } else {
+            this.containerEl.style.display = "none";
+            this.accessContainerEl.style.display = "none";
+        }
     }
 }
