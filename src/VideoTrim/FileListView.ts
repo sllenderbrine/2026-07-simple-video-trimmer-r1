@@ -1,0 +1,236 @@
+import { Canvas2dUtility, MathUtility } from "../VecLib/index.js";
+
+export enum FlvSortMethod {
+    RECENT = 0,
+    OLD = 1,
+    A_Z = 2,
+    Z_A = 3,
+};
+
+
+export class FileListView {
+    accessContainerEl: HTMLDivElement;
+    directoryLabelEl: HTMLDivElement;
+    changeDirectoryButtonEl: HTMLButtonElement;
+    refreshButtonEl: HTMLButtonElement;
+    containerEl: HTMLDivElement;
+    videoListContainerEl?: HTMLDivElement;
+    processingFileSystem: boolean = false;
+    videoLoadingId: number = 0;
+    videoDirectory: string = "";
+    thumbUrls: string[] = [];
+    sortMethod: FlvSortMethod = FlvSortMethod.RECENT;
+    constructor() {
+        const accessContainer = document.createElement("div");
+        this.accessContainerEl = accessContainer;
+        document.body.appendChild(accessContainer);
+        accessContainer.classList.add("flv-access-menu");
+
+        const directoryLabel = document.createElement("div");
+        this.directoryLabelEl = directoryLabel;
+        accessContainer.appendChild(directoryLabel);
+        directoryLabel.classList.add("flv-am-label");
+        directoryLabel.textContent = "directory/";
+
+        const changeDirectoryButton = document.createElement("button");
+        this.changeDirectoryButtonEl = changeDirectoryButton;
+        accessContainer.appendChild(changeDirectoryButton);
+        changeDirectoryButton.classList.add("flv-am-button");
+        changeDirectoryButton.textContent = "CHANGE DIRECTORY";
+        changeDirectoryButton.onclick = () => {
+            this.chooseDirectory();
+        }
+
+        const refreshButton = document.createElement("button");
+        this.refreshButtonEl = refreshButton;
+        accessContainer.appendChild(refreshButton);
+        refreshButton.classList.add("flv-am-button");
+        refreshButton.textContent = "REFRESH";
+        refreshButton.onclick = () => {
+            this.refresh();
+        }
+
+        const container = document.createElement("div");
+        this.containerEl = container;
+        document.body.appendChild(container);
+        container.classList.add("flv-container");
+    }
+    _setProcessingFileSystem(v: boolean) {
+        this.processingFileSystem = v;
+        if(v) {
+            this.refreshButtonEl.style.opacity = "0.5";
+            this.changeDirectoryButtonEl.style.opacity = "0.5";
+        } else {
+            this.refreshButtonEl.style.opacity = "1";
+            this.changeDirectoryButtonEl.style.opacity = "1";
+        }
+    }
+    _removeVideoList(container?: HTMLDivElement) {
+        if(!this.videoListContainerEl)
+            return;
+        this.videoListContainerEl.remove();
+        if(!container || this.videoListContainerEl == container)
+            delete this.videoListContainerEl;
+        for(let i=0; i<this.thumbUrls.length; i++) {
+            const url = this.thumbUrls[i]!;
+            URL.revokeObjectURL(url);
+        }
+        this.thumbUrls = [];
+    }
+    async chooseDirectory() {
+        if(this.processingFileSystem)
+            return;
+        this._setProcessingFileSystem(true);
+        const dir = await window.fileApi.promptChooseDirectory();
+        if(!dir) return;
+        this.directoryLabelEl.textContent = dir;
+        this.videoDirectory = dir;
+        this._setProcessingFileSystem(false);
+        this.refresh();
+    }
+    refresh() {
+        if(this.processingFileSystem)
+            return;
+        this.loadVideos();
+    }
+    async loadVideos() {
+        if(this.videoListContainerEl) {
+            this._removeVideoList();
+        }
+        if(this.videoDirectory === "")
+            return;
+        const vlid = ++this.videoLoadingId;
+        const videoListContainer = document.createElement("div");
+        this.videoListContainerEl = videoListContainer;
+        this.containerEl.appendChild(videoListContainer);
+        videoListContainer.classList.add("flv-list-container");
+        const checkValidity = () => {
+            if(vlid === this.videoLoadingId)
+                return false;
+            this._removeVideoList(videoListContainer);
+            return true;
+        }
+        const result = await window.fileApi.getDirectoryFileList(this.videoDirectory);
+        if(checkValidity()) return;
+        if(!result.success) return;
+        const videoFiles = result.files.filter(file => file.name.toLowerCase().endsWith(".mp4"));
+        switch(this.sortMethod) {
+            case FlvSortMethod.RECENT:
+                videoFiles.sort((a, b) => { return b.modified - a.modified; });
+                break;
+            case FlvSortMethod.OLD:
+                videoFiles.sort((a, b) => { return a.modified - b.modified; });
+                break;
+            case FlvSortMethod.A_Z:
+                videoFiles.sort((a, b) => { return b.name.localeCompare(a.name); });
+                break;
+            case FlvSortMethod.Z_A:
+                videoFiles.sort((a, b) => { return a.name.localeCompare(b.name); });
+                break;
+        }
+        const listItems = [];
+        for(let i=0; i<videoFiles.length; i++) {
+            const file = videoFiles[i]!;
+
+            const fileContainer = document.createElement("div");
+            videoListContainer.appendChild(fileContainer);
+            fileContainer.classList.add("flv-list-file");
+            const fileNameLabel = document.createElement("div");
+            fileContainer.appendChild(fileNameLabel);
+            fileNameLabel.classList.add("flv-list-file-name");
+            fileNameLabel.textContent = file.name;
+            listItems.push({
+                file,
+                container: fileContainer,
+                nameLabel: fileNameLabel,
+                hasThumb: false,
+            });
+
+            if(i % 10 === 0) {
+                await new Promise(res => setTimeout(res, 1));
+                if(checkValidity()) return;
+            }
+        }
+        const THUMB_WIDTH = 150;
+        const THUMB_HEIGHT = 100;
+        const THUMB_GAP = 15;
+        const thumbVideo = document.createElement("video");
+        const thumbCanvas = document.createElement("canvas");
+        thumbCanvas.width = THUMB_WIDTH;
+        thumbCanvas.height = THUMB_HEIGHT;
+        const ctx = Canvas2dUtility.get2dContext(thumbCanvas);
+        while(true) {
+            let startIndex = Math.floor(videoListContainer.scrollTop / (THUMB_HEIGHT + THUMB_GAP)) * Math.floor((window.innerWidth - THUMB_GAP) / (THUMB_WIDTH + THUMB_GAP));
+            let endIndex = MathUtility.pmod(startIndex - 1, listItems.length);
+            let i = MathUtility.pmod(startIndex, listItems.length);
+            while(true) {
+                const item = listItems[i]!;
+                if(!item.hasThumb)
+                    break;
+                i = MathUtility.pmod(i + 1, listItems.length);
+                if(i == endIndex)
+                    break;
+            }
+            const item = listItems[i]!;
+            if(item.hasThumb)
+                break;
+
+            let url: string;
+            await new Promise<void>(res => {
+                let sourceX = 0;
+                let sourceY = 0;
+                let sourceW = 0;
+                let sourceH = 0;
+                thumbVideo.onseeked = () => {
+                    ctx.drawImage(thumbVideo, sourceX, sourceY, sourceW, sourceH, 0, 0, THUMB_WIDTH, THUMB_HEIGHT);
+                    thumbCanvas.toBlob(blob => {
+                        if(!blob)
+                            return;
+                        url = URL.createObjectURL(blob);
+                        this.thumbUrls.push(url);
+                        res();
+                    });
+                }
+                thumbVideo.onloadedmetadata = () => {
+                    const vw = thumbVideo.videoWidth;
+                    const vh = thumbVideo.videoHeight;
+                    if(vh / THUMB_HEIGHT < vw / THUMB_WIDTH) {
+                        sourceH = vh;
+                        sourceW = THUMB_WIDTH * vh / THUMB_HEIGHT;
+                        sourceX = Math.floor((vw - sourceW) / 2);
+                        sourceY = 0;
+                    } else {
+                        sourceW = vw;
+                        sourceH = THUMB_HEIGHT * vw / THUMB_WIDTH;
+                        sourceY = Math.floor((vh - sourceH) / 2);
+                        sourceX = 0;
+                    }
+                    thumbVideo.currentTime = 1;
+                }
+                thumbVideo.onerror = (e) => {
+                    console.error("Failed:", item.file.path);
+                    res();
+                }
+                thumbVideo.src = item.file.path;
+            });
+            if(checkValidity()) return;
+
+            thumbVideo.pause();
+            thumbVideo.removeAttribute("src");
+            thumbVideo.load();
+
+            const img = document.createElement("img");
+            item.container.appendChild(img);
+            img.classList.add("flv-list-file-thumb");
+            img.src = url!;
+            
+            item.hasThumb = true;
+
+            await new Promise(res => setTimeout(res, 1));
+            if(checkValidity()) return;
+
+        }
+        thumbVideo.remove();
+        thumbCanvas.remove();
+    }
+}

@@ -1,0 +1,121 @@
+import { app, BrowserWindow, ipcMain, Menu, dialog } from "electron";
+import { fileURLToPath } from "url";
+import fs from "fs/promises";
+import path from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+let mainWindow: BrowserWindow;
+
+if(app.isPackaged) {
+    // Disables dev shortcuts
+    Menu.setApplicationMenu(null);
+}
+
+function backslashesToForward(str: string) {
+    return str.replace(/\\/g, "/");
+}
+
+function endWithForwardSlash(str: string) {
+    if(str.substring(str.length - 1) != "/")
+        return str + "/";
+    return str;
+}
+
+function createMainWindow() {
+    mainWindow = new BrowserWindow({
+        width: 1200,
+        height: 800,
+        // frame: false,
+        autoHideMenuBar: true,
+        webPreferences: {
+            preload: path.join(__dirname, "preload.cjs"),
+            contextIsolation: true,
+            nodeIntegration: false
+        }
+    });
+    return mainWindow;
+}
+
+async function init() {
+    await app.whenReady();
+
+    const win = createMainWindow();
+
+    win.loadFile(path.join(__dirname, "..", "..", "index.html"));
+}
+
+// Window API
+ipcMain.on("window-close", (event) => {
+    BrowserWindow.fromWebContents(event.sender)?.close();
+});
+
+ipcMain.on("window-minimize", (event) => {
+    BrowserWindow.fromWebContents(event.sender)?.minimize();
+});
+
+ipcMain.on("window-maximize", (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if(!win) return;
+    if(win.isMaximized()) win.restore();
+    else win.maximize();
+});
+
+ipcMain.on("window-move", (event, x: number, y: number) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    if(!win) return;
+    let [x1, y1] = win.getPosition() as [number, number];
+    win.setPosition(x1 + x, y1 + y);
+});
+
+// File API
+ipcMain.handle(
+    "get-directory-file-list",
+    async (_, dirPath: string): Promise<{
+        files: {
+            path: string,
+            name: string,
+            modified: number
+        }[],
+        success: boolean
+    }> => {
+        try {
+            let entries = await fs.readdir(dirPath, { withFileTypes: true });
+            entries = entries.filter(entry => entry.isFile());
+            const files = await Promise.all(
+                entries.map(async entry => {
+                    const fullPath = backslashesToForward(path.join(dirPath, entry.name));
+                    const stats = await fs.stat(fullPath);
+
+                    return {
+                        path: fullPath,
+                        name: entry.name,
+                        modified: stats.mtimeMs
+                    };
+                })
+            );
+
+            return { files, success: true };
+        } catch (err) {
+            console.error("Failed to get directory list:", err);
+            return { files: [], success: false };
+        }
+    }
+);
+
+ipcMain.handle("prompt-choose-directory", async () => {
+    const result = await dialog.showOpenDialog(mainWindow, {
+        title: "Choose Folder",
+        properties: ["openDirectory"]
+    });
+
+    if (result.canceled || !result.filePaths[0]) {
+        return null;
+    }
+
+    return endWithForwardSlash(backslashesToForward(result.filePaths[0]));
+});
+
+// initialize
+init();
