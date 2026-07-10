@@ -39,6 +39,7 @@
     width: fit-content;
     height: fit-content;
     gap: 10px;
+    z-index: 2;
 }
 
 .tv-name-container {
@@ -191,10 +192,14 @@
 
 .tv-crop-outline {
     outline: 3px dashed rgb(238, 68, 68);
+    border: 1px solid rgb(238, 68, 68);
+    left: 0px;
+    top: 0px;
     border-radius: 2px;
     position: absolute;
     pointer-events: none;
     user-select: none;
+    transition: top 0.3s ease, left 0.3s ease, width 0.3s ease, height 0.3s ease;
 }
 
 .tv-settings-button {
