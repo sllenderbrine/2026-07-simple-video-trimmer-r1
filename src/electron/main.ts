@@ -130,8 +130,7 @@ async function moveOriginalToRecycleBin(originalPath: string) {
         await shell.trashItem(originalPath);
         return true;
     } catch (error) {
-        console.warn("Could not move original video to the Recycle Bin; deleting it permanently.", error);
-        await fs.unlink(originalPath);
+        console.warn("Could not move original video to the Recycle Bin", error);
         return false;
     }
 }
