@@ -1,6 +1,6 @@
 import AccessMenu from "./AccessMenu/AccessMenu.js";
-import { NotificationSystem } from "./NotificationSystem/NotificationSystem.js";
-import { HtmlConnection } from "./VecLib/index.js";
+import { Notification, NotificationSystem } from "./NotificationSystem/NotificationSystem.js";
+import { HtmlConnection, StringUtility } from "./VecLib/index.js";
 import { FileListView, ListItem } from "./VideoTrim/FileListView.js";
 import { TrimView } from "./VideoTrim/TrimView.js";
 
@@ -38,7 +38,7 @@ const fileList = new FileListView();
         console.log("COMPLETED", res);
         editQueue.shift();
         fileList.refresh();
-        currentNotif.setCompleted(true);
+        currentNotif.setCheckmark(true);
         await new Promise(res => setTimeout(res, 500));
         currentNotif.remove();
     }
@@ -89,3 +89,15 @@ let title = document.createElement("div");
 title.textContent = "Simple Video Trimmer";
 accessMenu.containerEl.appendChild(title);
 title.classList.add("access-menu-main-title");
+
+accessMenu.containerEl.appendChild(NotificationSystem.containerEl);
+
+setInterval(() => {
+    let notif = NotificationSystem.createInfo({
+        title: "Testing",
+        desc: "Test Description",
+    });
+    setTimeout(() => {
+        notif.remove();
+    }, 200)
+}, 1000);

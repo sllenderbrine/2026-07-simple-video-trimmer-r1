@@ -257,7 +257,12 @@ export class TrimView {
             this.videoEl.play();
     }
     remove() {
+        this.videoEl.pause();
+        this.videoEl.removeAttribute("src");
+        this.videoEl.load();
         this.containerEl.remove();
+        this.videoEl.remove();
+        this.trimContainerEl.remove();
         this.connectionOwner.disconnectAll();
     }
 }
