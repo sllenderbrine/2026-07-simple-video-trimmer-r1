@@ -193,6 +193,8 @@
     outline: 3px dashed rgb(238, 68, 68);
     border-radius: 2px;
     position: absolute;
+    pointer-events: none;
+    user-select: none;
 }
 
 .tv-settings-button {
