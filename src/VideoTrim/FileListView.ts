@@ -40,15 +40,17 @@ export class FileListView {
 
         const directoryLabel = document.createElement("div");
         this.directoryLabelEl = directoryLabel;
-        accessContainer.appendChild(directoryLabel);
-        directoryLabel.classList.add("flv-am-label");
+        document.body.appendChild(directoryLabel);
+        directoryLabel.classList.add("flv-directory");
         directoryLabel.textContent = "directory/";
 
         const changeDirectoryButton = document.createElement("button");
         this.changeDirectoryButtonEl = changeDirectoryButton;
         accessContainer.appendChild(changeDirectoryButton);
         changeDirectoryButton.classList.add("flv-am-button");
-        changeDirectoryButton.textContent = "CHANGE DIRECTORY";
+        fetch("resources/icons/open-folder.svg").then(res => res.text()).then(text => {
+            changeDirectoryButton.innerHTML = text;
+        });
         changeDirectoryButton.onclick = () => {
             this.chooseDirectory();
         }
@@ -57,7 +59,9 @@ export class FileListView {
         this.refreshButtonEl = refreshButton;
         accessContainer.appendChild(refreshButton);
         refreshButton.classList.add("flv-am-button");
-        refreshButton.textContent = "REFRESH";
+        fetch("resources/icons/refresh.svg").then(res => res.text()).then(text => {
+            refreshButton.innerHTML = text;
+        });
         refreshButton.onclick = () => {
             this.refresh();
         }
@@ -259,9 +263,11 @@ export class FileListView {
         if(v) {
             this.containerEl.style.display = "grid";
             this.accessContainerEl.style.display = "flex";
+            this.directoryLabelEl.style.display = "block";
         } else {
             this.containerEl.style.display = "none";
             this.accessContainerEl.style.display = "none";
+            this.directoryLabelEl.style.display = "none";
         }
     }
 }

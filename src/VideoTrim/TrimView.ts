@@ -178,6 +178,8 @@ export class TrimView {
 
         new HtmlConnection(window, "keydown", (e: KeyboardEvent) => {
             const key = e.key.toLowerCase();
+            if(e.target == nameLabel)
+                return;
             if(key == " ") {
                 if(this.videoEl.ended && this.isUserPaused) {
                     this.seekTo(this.trimStart);
