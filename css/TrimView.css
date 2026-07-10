@@ -4,6 +4,7 @@
     top: 34px;
     width: 100%;
     height: calc(100% - 34px);
+    overflow: hidden;
     user-select: none;
 }
 
@@ -20,27 +21,78 @@
 
 .tv-trim-container {
     position: absolute;
-    left: 0;
+    left: 100px;
     bottom: 0;
-    width: 100%;
+    width: calc(100% - 200px);
     height: 100px;
     background-color: rgb(50, 50, 50);
     user-select: none;
     cursor: pointer;
 }
 
-.tv-name-label {
+.tv-name-container {
     position: absolute;
+    display: flex;
+    flex-direction: row;
     bottom: 120px;
     left: 20px;
+    width: fit-content;
+    height: fit-content;
+    user-select: none;
+    border-radius: 2px;
+}
+
+.tv-name-label {
     width: fit-content;
     height: fit-content;
     color: rgb(200, 200, 200);
     font-family: monospace;
     font-size: 20px;
     user-select: none;
-    pointer-events: none;
     text-shadow: 2px 2px 5px black, 2px 2px 25px black, 2px 2px 25px black, 2px 2px 25px black, 2px 2px 25px black, 2px 2px 15px black, 2px 2px 15px black;
+    padding: 8px 8px;
+    padding-right: 0px;
+    border-radius: 2px;
+    cursor: text;
+    transition: 0.1s background-color ease, 0.1s text-shadow ease;
+    flex: 0 0 auto;
+}
+
+.tv-name-extension {
+    width: fit-content;
+    height: fit-content;
+    color: rgb(200, 200, 200);
+    font-family: monospace;
+    font-size: 20px;
+    user-select: none;
+    text-shadow: 2px 2px 5px black, 2px 2px 25px black, 2px 2px 25px black, 2px 2px 25px black, 2px 2px 25px black, 2px 2px 15px black, 2px 2px 15px black;
+    padding: 8px 8px;
+    padding-left: 0px;
+    border-radius: 2px;
+    cursor: default;
+    transition: 0.1s background-color ease, 0.1s text-shadow ease;
+    flex: 0 0 auto;
+}
+
+.tv-name-label:hover {
+    background-color: rgb(50, 50, 50);
+    text-shadow: 2px 2px 5px black, 2px 2px 25px black, 2px 2px 25px black;
+}
+
+.tv-name-label:focus {
+    background-color: rgb(50, 50, 50);
+    outline: 1px solid white;
+    border: none;
+    text-shadow: 2px 2px 5px black, 2px 2px 25px black, 2px 2px 25px black;
+}
+
+.tv-trim-content {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    overflow: hidden;
 }
 
 .tv-trim-left {
@@ -52,17 +104,30 @@
     background-color: rgba(0, 0, 0, 0.5);
     user-select: none;
     cursor: pointer;
+    z-index: 4;
+}
+
+.tv-trim-left-handle {
+    right: 0;
+    top: 0;
+    width: 8px;
+    height: 100%;
+    background-color: white;
+    position: absolute;
+    border-radius: 2px;
+    z-index: 8;
 }
 
 .tv-trim-left-arrow {
     position: absolute;
-    right: 100%;
+    left: 100%;
     top: 50%;
     width: 20px;
     height: 20px;
-    transform: translate(35px, -50%);
+    transform: translate(25px, -50%);
     background-color: white;
     border-radius: 50%;
+    z-index: 6;
 }
 
 .tv-trim-right {
@@ -74,26 +139,39 @@
     background-color: rgba(0, 0, 0, 0.5);
     user-select: none;
     cursor: pointer;
+    z-index: 4;
+}
+
+.tv-trim-right-handle {
+    left: 0;
+    top: 0;
+    width: 8px;
+    height: 100%;
+    background-color: white;
+    position: absolute;
+    border-radius: 2px;
 }
 
 .tv-trim-right-arrow {
     position: absolute;
-    left: 100%;
+    right: 100%;
     top: 50%;
     width: 20px;
     height: 20px;
-    transform: translate(-35px, -50%);
+    transform: translate(-25px, -50%);
     background-color: white;
     border-radius: 50%;
     user-select: none;
     cursor: pointer;
+    z-index: 6;
 }
 
 .tv-timeline-handle {
     position: absolute;
     width: 1px;
     height: 100%;
-    background-color: white;
+    background-color: rgb(83, 172, 255);
     left: 50%;
     top: 0;
+    z-index: 5;
 }

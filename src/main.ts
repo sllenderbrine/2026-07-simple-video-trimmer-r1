@@ -13,3 +13,7 @@ fileList.videoOpenEvent.connect(item => {
 }, { owners: null });
 
 const accessMenu = new AccessMenu([]);
+let title = document.createElement("div");
+title.textContent = "Simple Video Trimmer";
+accessMenu.containerEl.appendChild(title);
+title.classList.add("access-menu-main-title");

@@ -49,3 +49,17 @@
     pointer-events: none;
     color: white;
 }
+
+.access-menu-main-title {
+    position: relative;
+    margin-left: 20px;
+    height: 34px;
+    width: fit-content;
+    align-content: center;
+    text-align: center;
+    user-select: none;
+    pointer-events: none;
+    font-family: monospace;
+    font-size: 14px;
+    color: rgb(105, 105, 105);
+}
