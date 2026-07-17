@@ -1,0 +1,35 @@
+.ntf-container {
+    width: 200px;
+    height: 45px;
+    border-radius: 4px;
+    flex: 0 0 auto;
+    background-color: rgb(50, 50, 50);
+    outline: 1px solid rgb(80, 80, 80);
+    color: white;
+    font-family: monospace;
+    padding: 6px 8px;
+    display: flex;
+    flex-direction: row;
+}
+
+.ntf-icon-container {
+
+}
+
+.ntf-icon {
+
+}
+
+.ntf-text-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.ntf-active-container {
+    position: absolute;
+    right: 20px;
+    top: 50px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}

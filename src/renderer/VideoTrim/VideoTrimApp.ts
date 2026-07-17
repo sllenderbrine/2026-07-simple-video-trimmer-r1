@@ -1,5 +1,5 @@
 import { FileListView } from "./FileListView.js";
-import { NotificationSystem } from "./NotificationSystem.js";
+import { NotificationIconType, NotificationSystem } from "./NotificationSystem.js";
 import { TrimView } from "./TrimView.js";
 import { WindowBar, WindowBarSide } from "./WindowBar.js";
 
@@ -21,7 +21,8 @@ export class VideoTrimApp {
                 },
             ];
         }, null, WindowBarSide.LEFT);
-        this.notificationSystem = new NotificationSystem(this.windowBar);
+        this.notificationSystem = new NotificationSystem();
+        document.body.appendChild(this.notificationSystem.activeContainerEl);
     }
 
     getExcludedFileNames() {
@@ -29,11 +30,9 @@ export class VideoTrimApp {
     }
 
     async promptOpenDirectory() {
-        const res = await window.fileApi.promptChooseDirectory();
-        if(res.success) {
-            if(res.directory != null) {
-                this.fileListView.setDirectory(res.directory);
-            }
+        const dir = await window.fileApi.promptChooseDirectory();
+        if(dir != null) {
+            // this.fileListView.setDirectory(dir);
         } else {
             this.notificationSystem.sendActiveNotification({
                 title: "Error",
@@ -41,11 +40,11 @@ export class VideoTrimApp {
                 description: "Error opening directory",
                 timeout: 5,
             });
-            this.notificationSystem.sendPassiveNotification({
-                title: "Error opening directory",
-                description: res.message,
-                important: false,
-            });
+            // this.notificationSystem.sendPassiveNotification({
+            //     title: "Error opening directory",
+            //     description: "empty description",
+            //     important: false,
+            // });
         }
     }
 

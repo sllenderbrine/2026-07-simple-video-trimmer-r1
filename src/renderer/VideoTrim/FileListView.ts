@@ -3,8 +3,8 @@ import { get2dContext } from "../Utility/Canvas2dUtility.js";
 import { joinPaths } from "../Utility/FilePathUtility.js";
 import { pmod } from "../Utility/MathUtility.js";
 
-const DIR_PATH_RESOURCES = "..";
-const DIR_PATH_ICONS = joinPaths(DIR_PATH_RESOURCES, "icons");
+const PATH_RESOURCES = "..";
+const PATH_ICONS = joinPaths(PATH_RESOURCES, "icons");
 
 export enum FlvSortMethod {
     RECENT = 0,
@@ -54,7 +54,7 @@ export class FileListView {
         this.changeDirectoryButtonEl = changeDirectoryButton;
         accessContainer.appendChild(changeDirectoryButton);
         changeDirectoryButton.classList.add("flv-am-button");
-        fetch(joinPaths(DIR_PATH_ICONS, "open-folder.svg")).then(res => res.text()).then(text => {
+        fetch(joinPaths(PATH_ICONS, "open-folder.svg")).then(res => res.text()).then(text => {
             changeDirectoryButton.innerHTML = text;
         });
         changeDirectoryButton.onclick = () => {
@@ -65,7 +65,7 @@ export class FileListView {
         this.refreshButtonEl = refreshButton;
         accessContainer.appendChild(refreshButton);
         refreshButton.classList.add("flv-am-button");
-        fetch(joinPaths(DIR_PATH_ICONS, "refresh.svg")).then(res => res.text()).then(text => {
+        fetch(joinPaths(PATH_ICONS, "refresh.svg")).then(res => res.text()).then(text => {
             refreshButton.innerHTML = text;
         });
         refreshButton.onclick = () => {
