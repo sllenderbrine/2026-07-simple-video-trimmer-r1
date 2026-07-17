@@ -42,6 +42,18 @@
     z-index: 2;
 }
 
+.tv-preferences-container {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    bottom: 120px;
+    right: -80px;
+    width: fit-content;
+    height: fit-content;
+    gap: 10px;
+    z-index: 2;
+}
+
 .tv-name-container {
     position: relative;
     display: flex;

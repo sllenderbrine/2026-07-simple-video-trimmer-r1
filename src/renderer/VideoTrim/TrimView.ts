@@ -1,5 +1,8 @@
-import ContextMenu from "../ContextMenu/ContextMenu.js";
-import { ConnectionOwner, HtmlConnection, MathUtility, Signal } from "../VecLib/index.js";
+import { ConnectionOwner } from "../EventSignals/ConnectionOwner.js";
+import { HtmlConnection } from "../EventSignals/HtmlConnection.js";
+import { Signal } from "../EventSignals/Signal.js";
+import { clamp } from "../Utility/MathUtility.js";
+import { ContextMenu } from "./ContextMenu.js";
 import type { ListItem } from "./FileListView.js";
 
 export class TrimView {
@@ -122,7 +125,7 @@ export class TrimView {
         const seekMouse = (e: MouseEvent) => {
             const rect = trimContainer.getBoundingClientRect();
             let t = (e.clientX - rect.left) / rect.width * video.duration;
-            t = MathUtility.clamp(t, 0, video.duration);
+            t = clamp(t, 0, video.duration);
             if(isDraggingTrimLeft) {
                 t = Math.min(t, this.trimEnd);
                 this.trimStart = t;
@@ -254,35 +257,38 @@ export class TrimView {
         cropButton.textContent = "Select Crop [None]";
         settingsContainer.prepend(cropButton);
         cropButton.onclick = (e) => {
-            let ctx = ContextMenu.fromLayout([
-                { name: "None", data: "None" },
-                { name: "Left Half", data: "Left Half" },
-                { name: "Right Half", data: "Right Half" },
-            ], e.clientX, e.clientY);
+            let ctx = new ContextMenu(null, e.clientX, e.clientY);
+            ctx.addLayout([
+                { title: "None", data: "None" },
+                { title: "Left Half", data: "Left Half" },
+                { title: "Right Half", data: "Right Half" },
+            ]);
             ctx.clickOffEvent.connect(() => {
                 ctx.remove();
             }, { owners: null });
-            ctx.buttonClickEvent.connect((e, btn, i) => {
-                if(btn.data == "None") {
+            ctx.buttonClickEvent.connect(e => {
+                if(e.contextMenuButton == null)
+                    return;
+                if(e.contextMenuButton.data == "None") {
                     this.cropLeft = 0;
                     this.cropRight = 0;
                     this.cropTop = 0;
                     this.cropBottom = 0;
                     this.updateCropOutline();
-                } else if(btn.data == "Left Half") {
+                } else if(e.contextMenuButton.data == "Left Half") {
                     this.cropLeft = 0;
                     this.cropRight = this.videoEl.videoWidth / 2;
                     this.cropTop = 0;
                     this.cropBottom = 0;
                     this.updateCropOutline();
-                } else if(btn.data == "Right Half") {
+                } else if(e.contextMenuButton.data == "Right Half") {
                     this.cropLeft = this.videoEl.videoWidth / 2;
                     this.cropRight = 0;
                     this.cropTop = 0;
                     this.cropBottom = 0;
                     this.updateCropOutline();
                 }
-                cropButton.textContent = `Select Crop [${btn.data}]`;
+                cropButton.textContent = `Select Crop [${e.contextMenuButton.data}]`;
                 ctx.remove();
             }, { owners: null });
         }

@@ -1,4 +1,10 @@
-import { Canvas2dUtility, MathUtility, Signal } from "../VecLib/index.js";
+import { Signal } from "../EventSignals/Signal.js";
+import { get2dContext } from "../Utility/Canvas2dUtility.js";
+import { joinPaths } from "../Utility/FilePathUtility.js";
+import { pmod } from "../Utility/MathUtility.js";
+
+const DIR_PATH_RESOURCES = "..";
+const DIR_PATH_ICONS = joinPaths(DIR_PATH_RESOURCES, "icons");
 
 export enum FlvSortMethod {
     RECENT = 0,
@@ -48,7 +54,7 @@ export class FileListView {
         this.changeDirectoryButtonEl = changeDirectoryButton;
         accessContainer.appendChild(changeDirectoryButton);
         changeDirectoryButton.classList.add("flv-am-button");
-        fetch("resources/icons/open-folder.svg").then(res => res.text()).then(text => {
+        fetch(joinPaths(DIR_PATH_ICONS, "open-folder.svg")).then(res => res.text()).then(text => {
             changeDirectoryButton.innerHTML = text;
         });
         changeDirectoryButton.onclick = () => {
@@ -59,7 +65,7 @@ export class FileListView {
         this.refreshButtonEl = refreshButton;
         accessContainer.appendChild(refreshButton);
         refreshButton.classList.add("flv-am-button");
-        fetch("resources/icons/refresh.svg").then(res => res.text()).then(text => {
+        fetch(joinPaths(DIR_PATH_ICONS, "refresh.svg")).then(res => res.text()).then(text => {
             refreshButton.innerHTML = text;
         });
         refreshButton.onclick = () => {
@@ -185,16 +191,16 @@ export class FileListView {
         const thumbCanvas = document.createElement("canvas");
         thumbCanvas.width = THUMB_WIDTH;
         thumbCanvas.height = THUMB_HEIGHT;
-        const ctx = Canvas2dUtility.get2dContext(thumbCanvas);
+        const ctx = get2dContext(thumbCanvas);
         while(true) {
             let startIndex = Math.floor(this.containerEl.scrollTop / (THUMB_HEIGHT + THUMB_GAP)) * Math.floor((videoListContainer.clientWidth - THUMB_GAP) / (THUMB_WIDTH + THUMB_GAP));
-            let endIndex = MathUtility.pmod(startIndex - 1, listItems.length);
-            let i = MathUtility.pmod(startIndex, listItems.length);
+            let endIndex = pmod(startIndex - 1, listItems.length);
+            let i = pmod(startIndex, listItems.length);
             while(true) {
                 const item = listItems[i]!;
                 if(!item.hasThumb)
                     break;
-                i = MathUtility.pmod(i + 1, listItems.length);
+                i = pmod(i + 1, listItems.length);
                 if(i == endIndex)
                     break;
             }

@@ -1,8 +1,8 @@
-import AccessMenu from "./AccessMenu/AccessMenu.js";
-import { Notification, NotificationSystem } from "./NotificationSystem/NotificationSystem.js";
-import { HtmlConnection, StringUtility } from "./VecLib/index.js";
+import { Notification, NotificationSystem } from "./VideoTrim/NotificationSystem.js";
 import { FileListView, ListItem } from "./VideoTrim/FileListView.js";
 import { TrimView } from "./VideoTrim/TrimView.js";
+import { HtmlConnection } from "./EventSignals/HtmlConnection.js";
+import { WindowBar, WindowBarSide } from "./VideoTrim/WindowBar.js";
 
 let editQueue: {
     path:string, start: number, end: number,
@@ -94,10 +94,36 @@ fileList.videoOpenEvent.connect(item => {
     }, { owners: null });
 }, { owners: null });
 
-const accessMenu = new AccessMenu([]);
-let title = document.createElement("div");
-title.textContent = "Simple Video Trimmer";
-accessMenu.containerEl.appendChild(title);
-title.classList.add("access-menu-main-title");
+const wbar = new WindowBar();
+wbar.addTextButton("File", () => {
+    return [
+        {
+            title: "Open Directory...",
+            icon: "open-folder",
+            data: { action: "open-directory", },
+        },
+    ];
+}, null, WindowBarSide.LEFT);
+const notifBtn = wbar.addIconButton("notification", null, () => {
 
-accessMenu.containerEl.appendChild(NotificationSystem.containerEl);
+}, WindowBarSide.RIGHT, false, 22, 8);
+const notifCounter = document.createElement("div");
+notifBtn.containerEl.appendChild(notifCounter);
+notifCounter.classList.add("wbar-notif-counter");
+notifCounter.textContent = "1";
+
+function runAppAction(action: string) {
+    switch(action) {
+        case "open-directory":
+
+            break;
+    }
+}
+
+wbar.menuButtonClickEvent.connect(e => {
+    if(e.contextMenuButton != null && e.contextMenuButton.data != null && e.contextMenuButton.data.action != null) {
+        runAppAction(e.contextMenuButton.data.action);
+    }
+}, { owners: null });
+
+wbar.containerEl.appendChild(NotificationSystem.containerEl);

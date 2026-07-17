@@ -8,6 +8,7 @@ import { randomUUID } from "crypto";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const root = app.getAppPath();
 
 let mainWindow: BrowserWindow;
 
@@ -277,7 +278,7 @@ async function init() {
 
     const win = createMainWindow();
 
-    win.loadFile(path.join(__dirname, "..", "..", "index.html"));
+    win.loadFile(path.join(root, "resources", "html", "index.html"));
 }
 
 // Window API
