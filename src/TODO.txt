@@ -2,3 +2,5 @@
 2. remove old video editor and file viewer code
 3. add settings option for lossless trim vs precise trim
  - on lossless, snap the trim handles to each i-frame on renderer side
+4. add option for export quality and compression
+5. add support for other video file types
