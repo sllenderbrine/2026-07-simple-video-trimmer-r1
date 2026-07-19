@@ -173,6 +173,7 @@ export class ContextMenuButton {
         this.disabled = v;
         
         this.buttonEl.style.display = this.disabled ? "none" : "block";
+        this.containerEl.style.pointerEvents = this.disabled ? "none" : "auto";
         this.titleEl.style.opacity = this.disabled ? "0.5" : "1";
 
         if(this.suffixIconEl != null) {

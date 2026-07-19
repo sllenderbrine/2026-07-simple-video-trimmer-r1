@@ -30,6 +30,7 @@ export class VideoTrimApp {
                     title: "Close Folder",
                     icon: "close-folder",
                     data: { action: "close-folder", },
+                    disabled: !this.vdirViewer.isLoaded,
                 },
             ];
         }, null, WindowBarSide.LEFT);

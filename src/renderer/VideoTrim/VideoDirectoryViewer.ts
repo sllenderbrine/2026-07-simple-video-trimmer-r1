@@ -163,6 +163,7 @@ export class VideoDirectoryViewer {
     scrollbar?: CustomScrollbar;
     videos: VdvVideo[] = [];
     directory: string = "";
+    isLoaded: boolean = false;
     connectionOwner: ConnectionOwner = new ConnectionOwner();
     constructor(
         public notificationSystem: NotificationSystem,
@@ -181,6 +182,13 @@ export class VideoDirectoryViewer {
             dateModified: number,
         }[],
     ) {
+        videos = videos.filter(file => {
+            const name = file.name.toLowerCase();
+            if(name.endsWith(".mp4"))
+                return true;
+            return false;
+        });
+        this.isLoaded = true;
         if(this.contentEl) {
             this.contentEl.remove();
             delete this.contentEl;
@@ -210,5 +218,6 @@ export class VideoDirectoryViewer {
 
     unloadVideos() {
         this.containerEl.innerHTML = "";
+        this.isLoaded = false;
     }
 }
