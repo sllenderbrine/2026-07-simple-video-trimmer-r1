@@ -4,14 +4,14 @@
 
 An Electron.js app made for organizing and trimming a large amount of gameplay clips.
 
+⚠️ There are currently no working releases. A new release should come soon to fix the issues
+
 
 
 ###### Platforms
 
 * 💻 Windows
 
-
-⚠️ There are currently no working releases. A new release should come soon to fix the issues
 
 
 ###### Planned Features
