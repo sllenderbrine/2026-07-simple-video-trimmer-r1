@@ -11,8 +11,10 @@ An Electron.js app made for organizing and trimming a large amount of gameplay c
 * 💻 Windows
 
 
+⚠️ There are currently no working releases. A new release should come soon to fix the issues
 
-###### Features
+
+###### Planned Features
 
 * 📁 Browse and preview videos on your device
 * ✂️ Quickly trim, crop, and rename videos
