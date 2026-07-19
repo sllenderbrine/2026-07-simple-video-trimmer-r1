@@ -7,7 +7,8 @@
     border-radius: 2px;
     border: 1px solid rgb(80, 80, 80);
     overflow: hidden;
-    font-family: Arial;
+    font-family: "Recursive";
+    font-weight: 300;
     color: white;
     z-index: 1000;
     min-width: 80px;

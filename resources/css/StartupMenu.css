@@ -7,7 +7,7 @@
     align-items: center;
     gap: 35%;
     color: rgb(200, 200, 200);
-    font-family: monospace;
+    font-family: "Recursive";
 }
 
 .startup-content-column {
@@ -27,17 +27,17 @@
 }
 
 .startup-container h2 {
-    color: rgb(180, 180, 180);
+    color: rgb(190, 190, 190);
     font-size: 20px;
     font-weight: 200;
     user-select: none;
 }
 
 .startup-container h3 {
-    color: rgb(100, 100, 100);
+    color: rgb(80, 80, 80);
     font-size: 20px;
     margin: 0px 0px;
     padding: 4px 0px;
-    font-weight: 200;
+    font-weight: 600;
     user-select: none;
 }

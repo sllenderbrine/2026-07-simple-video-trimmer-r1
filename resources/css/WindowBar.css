@@ -5,7 +5,8 @@
     height: 34px;
     -webkit-app-region: drag;
     color: white;
-    font-family: Arial;
+    font-family: "Recursive";
+    font-weight: 300;
     font-size: 14px;
     z-index: 20;
 }

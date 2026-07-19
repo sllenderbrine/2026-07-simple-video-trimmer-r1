@@ -33,7 +33,8 @@
     height: calc(100% - 10px);
     word-wrap: break-word;
     color: white;
-    font-family: monospace;
+    font-family: "Recursive";
+    font-weight: 300;
     font-size: 10px;
     user-select: none;
     pointer-events: none;
