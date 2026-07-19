@@ -1,6 +1,8 @@
 import { ConnectionOwner } from "../EventSignals/ConnectionOwner.js";
 import { HtmlConnection } from "../EventSignals/HtmlConnection.js";
+import { shuffleInPlace } from "../Utility/ArrayUtility.js";
 import { pmod } from "../Utility/MathUtility.js";
+import { formatVideoDuration } from "../Utility/StringUtility.js";
 import { CustomScrollbar } from "./CustomScrollbar.js";
 import { NotificationIconType, NotificationSystem } from "./NotificationSystem.js";
 
@@ -81,6 +83,11 @@ async function startThumbnailLoader(vdv: VideoDirectoryViewer) {
         fileView.thumbnailEl = img;
         img.style.display = "none";
 
+        const durationEl = document.createElement("div");
+        fileView.contentEl.appendChild(durationEl);
+        durationEl.classList.add("vdv-video-duration");
+        durationEl.textContent = "0:00";
+
         fileView.hasThumbnail = true;
         video.pause();
         video.removeAttribute("src");
@@ -91,6 +98,9 @@ async function startThumbnailLoader(vdv: VideoDirectoryViewer) {
             continue;
         }
         await setVideoCurrentTimeAndWait(video, 0);
+
+        durationEl.textContent = formatVideoDuration(video.duration);
+
         let sourceWidth = 0;
         let sourceHeight = 0;
         if(video.videoWidth / video.videoHeight > canvas.width / canvas.height) {
@@ -155,7 +165,22 @@ export class VdvVideo {
         this.titleEl.classList.add("vdv-video-title");
         this.titleEl.textContent = title;
     }
+    remove() {
+        if(this.thumbnailUrl) {
+            URL.revokeObjectURL(this.thumbnailUrl);
+            delete this.thumbnailUrl;
+        }
+        this.containerEl.remove();
+    }
 }
+
+export enum VdvSortMethod {
+    RECENT = 0,
+    OLD = 1,
+    A_Z = 2,
+    Z_A = 3,
+    RANDOM = 4,
+};
 
 export class VideoDirectoryViewer {
     containerEl: HTMLDivElement;
@@ -164,6 +189,7 @@ export class VideoDirectoryViewer {
     videos: VdvVideo[] = [];
     directory: string = "";
     isLoaded: boolean = false;
+    sortMethod: VdvSortMethod = VdvSortMethod.RECENT;
     connectionOwner: ConnectionOwner = new ConnectionOwner();
     constructor(
         public notificationSystem: NotificationSystem,
@@ -174,6 +200,44 @@ export class VideoDirectoryViewer {
         startThumbnailLoader(this);
     }
 
+    updateVideoSort() {
+        switch(this.sortMethod) {
+            case VdvSortMethod.RECENT:
+                this.sortVideos((a, b) => {
+                    return b.dateModified - a.dateModified;
+                });
+                break;
+            case VdvSortMethod.OLD:
+                this.sortVideos((a, b) => {
+                    return a.dateModified - b.dateModified;
+                });
+                break;
+            case VdvSortMethod.A_Z:
+                this.sortVideos((a, b) => {
+                    return a.title.localeCompare(b.title);
+                });
+                break;
+            case VdvSortMethod.Z_A:
+                this.sortVideos((a, b) => {
+                    return b.title.localeCompare(a.title);
+                });
+                break;
+            case VdvSortMethod.RANDOM:
+                shuffleInPlace(this.videos);
+                this.videos.forEach(video => this.contentEl!.appendChild(video.containerEl));
+                break;
+        }
+    }
+
+    sortVideos(callback: (a: VdvVideo, b: VdvVideo) => number) {
+        if(this.contentEl == null)
+            return;
+        this.videos.sort((a, b) => {
+            return callback(a, b);
+        });
+        this.videos.forEach(video => this.contentEl!.appendChild(video.containerEl));
+    }
+
     loadVideos(
         directory: string,
         videos: {
@@ -182,21 +246,14 @@ export class VideoDirectoryViewer {
             dateModified: number,
         }[],
     ) {
+        this.unloadVideos();
+        this.isLoaded = true;
         videos = videos.filter(file => {
             const name = file.name.toLowerCase();
             if(name.endsWith(".mp4"))
                 return true;
             return false;
         });
-        this.isLoaded = true;
-        if(this.contentEl) {
-            this.contentEl.remove();
-            delete this.contentEl;
-        }
-        if(this.scrollbar) {
-            this.scrollbar.remove();
-            delete this.scrollbar;
-        }
         const content = document.createElement("div");
         this.containerEl.appendChild(content);
         content.classList.add("vdv-content");
@@ -214,10 +271,21 @@ export class VideoDirectoryViewer {
             content.appendChild(vdvv.containerEl);
             this.videos.push(vdvv);
         }
+
+        this.updateVideoSort();
     }
 
     unloadVideos() {
-        this.containerEl.innerHTML = "";
+        if(this.contentEl) {
+            this.contentEl.remove();
+            delete this.contentEl;
+        }
+        if(this.scrollbar) {
+            this.scrollbar.remove();
+            delete this.scrollbar;
+        }
         this.isLoaded = false;
+        this.videos.forEach(video => video.remove());
+        this.videos = [];
     }
 }

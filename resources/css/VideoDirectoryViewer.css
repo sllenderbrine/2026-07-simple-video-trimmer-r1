@@ -78,3 +78,19 @@
     justify-content: center;
     align-items: center;
 }
+
+.vdv-video-duration {
+    position: relative;
+    width: fit-content;
+    height: fit-content;
+    word-wrap: break-word;
+    color: rgb(220, 220, 220);
+    font-family: "Recursive";
+    font-weight: 300;
+    font-size: 11px;
+    user-select: none;
+    pointer-events: none;
+    align-content: end;
+    z-index: 2;
+    text-shadow: 2px 2px 5px black, 2px 2px 5px black, 2px 2px 5px black, 2px 2px 5px black, 2px 2px 5px black;
+}

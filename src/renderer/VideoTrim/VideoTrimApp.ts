@@ -1,7 +1,7 @@
 import { ConnectionOwner } from "../EventSignals/ConnectionOwner.js";
 import { NotificationIconType, NotificationSystem } from "./NotificationSystem.js";
 import { StartupMenu } from "./StartupMenu.js";
-import { VideoDirectoryViewer } from "./VideoDirectoryViewer.js";
+import { VdvSortMethod, VideoDirectoryViewer } from "./VideoDirectoryViewer.js";
 import { WindowBar, WindowBarSide } from "./WindowBar.js";
 
 export class VideoTrimApp {
@@ -41,7 +41,37 @@ export class VideoTrimApp {
         }, null, WindowBarSide.LEFT);
         this.windowBar.addTextButton("View", () => {
             return [
-                
+                {
+                    title: "Sort By",
+                    icon: "sort-down",
+                    children: [
+                        {
+                            title: "Recent",
+                            icon: this.vdirViewer.sortMethod == VdvSortMethod.RECENT ? "small-check" : undefined,
+                            data: { action: "sort-recent", },
+                        },
+                        {
+                            title: "Old",
+                            icon: this.vdirViewer.sortMethod == VdvSortMethod.OLD ? "small-check" : undefined,
+                            data: { action: "sort-old", },
+                        },
+                        {
+                            title: "A-Z",
+                            icon: this.vdirViewer.sortMethod == VdvSortMethod.A_Z ? "small-check" : undefined,
+                            data: { action: "sort-az", },
+                        },
+                        {
+                            title: "Z-A",
+                            icon: this.vdirViewer.sortMethod == VdvSortMethod.Z_A ? "small-check" : undefined,
+                            data: { action: "sort-za", },
+                        },
+                        {
+                            title: "Random",
+                            icon: this.vdirViewer.sortMethod == VdvSortMethod.RANDOM ? "small-check" : undefined,
+                            data: { action: "sort-random", },
+                        },
+                    ],
+                },
             ];
         }, null, WindowBarSide.LEFT);
         this.windowBar.addTextButton("Help", () => {
@@ -57,7 +87,10 @@ export class VideoTrimApp {
         this.windowBar.menuButtonClickEvent.connect((e) => {
             if(e.contextMenuButton != null && e.contextMenuButton.data != null && e.contextMenuButton.data.action != null) {
                 this.runAppAction(e.contextMenuButton.data.action);
-                e.contextMenu!.remove();
+                let parent = e.contextMenu!;
+                while(parent.parent && parent.parent != parent)
+                    parent = parent.parent;
+                parent.remove();
             }
         }, { owners: [ this.connectionOwner ] });
         
@@ -100,6 +133,26 @@ export class VideoTrimApp {
             case "close-folder":
                 this.vdirViewer.unloadVideos();
                 this.startupMenu.containerEl.style.display = "flex";
+                break;
+            case "sort-recent":
+                this.vdirViewer.sortMethod = VdvSortMethod.RECENT;
+                this.vdirViewer.updateVideoSort();
+                break;
+            case "sort-old":
+                this.vdirViewer.sortMethod = VdvSortMethod.OLD;
+                this.vdirViewer.updateVideoSort();
+                break;
+            case "sort-az":
+                this.vdirViewer.sortMethod = VdvSortMethod.A_Z;
+                this.vdirViewer.updateVideoSort();
+                break;
+            case "sort-za":
+                this.vdirViewer.sortMethod = VdvSortMethod.Z_A;
+                this.vdirViewer.updateVideoSort();
+                break;
+            case "sort-random":
+                this.vdirViewer.sortMethod = VdvSortMethod.RANDOM;
+                this.vdirViewer.updateVideoSort();
                 break;
             case "open-github-repo":
                 window.redirectApi.openGithubRepo();

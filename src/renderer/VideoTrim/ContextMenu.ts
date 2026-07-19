@@ -163,6 +163,8 @@ export class ContextMenuButton {
         this.suffixIconEl.innerHTML = "";
         const iconContainer = document.createElement("div");
         this.suffixIconEl!.appendChild(iconContainer);
+        iconContainer.classList.add("ctxm-icon");
+        iconContainer.style.scale = "0.5";
         this.childrenLayout = childrenLayout;
         fetch(joinPaths(PATH_ICONS, "triangle.svg")).then(res => res.text()).then(inner => {
             iconContainer.innerHTML = inner;
