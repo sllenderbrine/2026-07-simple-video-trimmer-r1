@@ -2,8 +2,7 @@
 ✓ clean up electron code
 ✓ add user-readable error messages from electron to renderer
 ✓ remake notification system
-- remake file viewer
- > load metadata for video files first before generating thumbnails
+✓ remake file viewer
 - remake video editor
 - remove old video editor and file viewer code
 
