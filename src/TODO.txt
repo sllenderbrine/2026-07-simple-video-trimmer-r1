@@ -10,7 +10,9 @@
 
 
 ▢ Later Planned Features
+- ctrl + scroll to change file viewer scale
 - add settings option for lossless trim vs precise trim
  > on lossless, snap the trim handles to each i-frame on renderer side
 - add option for export quality and compression
 - add support for other video file types
+- ctrl + scroll to zoom in on parts of video in editor and mousewheel + drag to move around (for viewing only)
