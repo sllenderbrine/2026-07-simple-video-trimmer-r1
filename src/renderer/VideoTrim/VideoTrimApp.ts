@@ -1,8 +1,8 @@
 import { ConnectionOwner } from "../EventSignals/ConnectionOwner.js";
-import { NotificationIconType, NotificationSystem } from "./NotificationSystem.js";
+import { NotificationIconType, NotificationSystem } from "../Ui/NotificationSystem.js";
 import { StartupMenu } from "./StartupMenu.js";
 import { VdvSortMethod, VideoDirectoryViewer } from "./VideoDirectoryViewer.js";
-import { WindowBar, WindowBarSide } from "./WindowBar.js";
+import { WindowBar, WindowBarSide } from "../Ui/WindowBar.js";
 
 export class VideoTrimApp {
     contentEl: HTMLDivElement;

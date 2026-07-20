@@ -3,8 +3,8 @@ import { HtmlConnection } from "../EventSignals/HtmlConnection.js";
 import { shuffleInPlace } from "../Utility/ArrayUtility.js";
 import { pmod } from "../Utility/MathUtility.js";
 import { formatVideoDuration } from "../Utility/StringUtility.js";
-import { CustomScrollbar } from "./CustomScrollbar.js";
-import { NotificationIconType, NotificationSystem } from "./NotificationSystem.js";
+import { CustomScrollbar } from "../Ui/CustomScrollbar.js";
+import { NotificationIconType, NotificationSystem } from "../Ui/NotificationSystem.js";
 
 async function delay(ms: number) {
     return new Promise(res => setTimeout(res, ms));
