@@ -1,6 +1,16 @@
-1. remake video editor
-2. remove old video editor and file viewer code
-3. add settings option for lossless trim vs precise trim
- - on lossless, snap the trim handles to each i-frame on renderer side
-4. add option for export quality and compression
-5. add support for other video file types
+▢ Version 2.0.0 to-do list
+✓ clean up electron code
+✓ add user-readable error messages from electron to renderer
+✓ remake notification system
+- remake file viewer
+ > load metadata for video files first before generating thumbnails
+- remake video editor
+- remove old video editor and file viewer code
+
+
+
+▢ Later Planned Features
+- add settings option for lossless trim vs precise trim
+ > on lossless, snap the trim handles to each i-frame on renderer side
+- add option for export quality and compression
+- add support for other video file types

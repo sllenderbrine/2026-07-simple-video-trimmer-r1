@@ -2,6 +2,7 @@ export class StartupMenu {
     containerEl: HTMLDivElement;
     columnEl0: HTMLDivElement;
     columnEl1: HTMLDivElement;
+    startContainerEl: HTMLDivElement;
     constructor() {
         this.containerEl = document.createElement("div");
         this.containerEl.classList.add("startup-container");
@@ -27,7 +28,21 @@ export class StartupMenu {
         this.columnEl1.innerHTML = `
             <div>
                 <h2>Start</h2>
+                <div class="spm-start">
+
+                </div>
             </div>
         `;
+
+        const startContainerEl = this.columnEl1.querySelector(".spm-start") as HTMLDivElement;
+        this.startContainerEl = startContainerEl;
+
+        this.addStartLink("Open Folder", "folder", () => {
+
+        });
+    }
+
+    addStartLink(title: string, icon: string, onClick: () => void) {
+        
     }
 }
