@@ -229,6 +229,7 @@ export type ActiveNotificationOptions = {
     viewDetails?: boolean,
     iconScale?: number,
     canClose?: boolean,
+    descriptionWordBreak?: boolean,
 };
 
 export class NotificationSystem {
@@ -299,6 +300,7 @@ export class NotificationSystem {
         viewDetails = false,
         iconScale = 1,
         canClose = true,
+        descriptionWordBreak = false,
     }: ActiveNotificationOptions = {}) {
         const notif = new ActiveNotification(this);
         notif.setTitle(title);
@@ -320,6 +322,9 @@ export class NotificationSystem {
         }, { owners: null });
         if(viewDetails) {
             notif.addViewDetailsLink();
+        }
+        if(descriptionWordBreak) {
+            notif.descriptionEl.style.wordBreak = "break-word";
         }
         notif.setCloseButton(canClose);
         return notif;

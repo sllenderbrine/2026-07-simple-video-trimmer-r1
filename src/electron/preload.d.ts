@@ -1,3 +1,6 @@
+import { ErrorMessageResult } from "../shared/Utility/PromiseUtility.js";
+import { Settings } from "../shared/VideoTrim/UserSettingsUtility.js";
+
 export {};
 
 declare global {
@@ -35,6 +38,10 @@ declare global {
         };
         redirectApi: {
             openGithubRepo: () => void;
+        };
+        settingsApi: {
+            load: () => Promise<ErrorMessageResult<Settings>>;
+            save: (settings: Settings) => Promise<ErrorMessageResult<undefined>>;
         };
     }
 }

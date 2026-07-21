@@ -7,6 +7,7 @@ import { formatVideoDuration } from "../../shared/Utility/StringUtility.js";
 import { loadVideo, loadVideoMetadata, seekVideo, unloadVideo } from "../../shared/Utility/VideoUtility.js";
 import { CustomScrollbar } from "../Ui/CustomScrollbar.js";
 import { NotificationIconType, NotificationSystem } from "../Ui/NotificationSystem.js";
+import type { VideoTrimApp } from "./VideoTrimApp.js";
 
 let allMetadataLoaded = false;
 let metadataCompleteCount = 0;
@@ -81,7 +82,7 @@ async function startThumbnailLoader(vdv: VideoDirectoryViewer) {
     canvas.height = 100;
     const ctx = canvas.getContext("2d");
     if(ctx == null) {
-        const notif = vdv.notificationSystem.sendActiveNotification({
+        const notif = vdv.app.notificationSystem.sendActiveNotification({
             title: "Fatal Error",
             iconType: NotificationIconType.ERROR,
             description: "CanvasRenderingContext2D not supported",
@@ -235,7 +236,7 @@ export class VideoDirectoryViewer {
     sortMethod: VdvSortMethod = VdvSortMethod.DATE_RECENT;
     connectionOwner: ConnectionOwner = new ConnectionOwner();
     constructor(
-        public notificationSystem: NotificationSystem,
+        public app: VideoTrimApp,
     ) {
         this.containerEl = document.createElement("div");
         this.containerEl.classList.add("vdv-container");
@@ -311,6 +312,22 @@ export class VideoDirectoryViewer {
             return callback(a, b);
         });
         this.videos.forEach(video => this.contentEl!.appendChild(video.containerEl));
+    }
+
+    async refresh() {
+        if(!this.isLoaded)
+            return;
+        let res = await window.fileApi.getDirectoryFileList(this.directory);
+        if(res.success) {
+            this.loadVideos(this.directory, res.value);
+        } else {
+            const notif = this.app.notificationSystem.sendActiveNotification({
+                title: "Error",
+                iconType: NotificationIconType.ERROR,
+                description: "Failed to get directory",
+            });
+            notif.addViewDetailsLink();
+        }
     }
 
     loadVideos(

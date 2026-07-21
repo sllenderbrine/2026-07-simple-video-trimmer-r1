@@ -4,7 +4,7 @@ import path from "path";
 import fsPromises from "fs/promises";
 import ffmpegPath from "ffmpeg-static";
 import { randomUUID } from "crypto";
-import { Result } from "../shared/Utility/PromiseUtility.js";
+import { ErrorMessageResult } from "../shared/Utility/PromiseUtility.js";
 
 export function replaceBackslashesWithForward(str: string) {
     return str.replace(/\\/g, "/");
@@ -36,12 +36,10 @@ export function runProcess(
     command: string,
     args: string[],
     env?: NodeJS.ProcessEnv
-): Promise<Result<{
+): Promise<ErrorMessageResult<{
     exitCode: number | null,
     stdout: string,
     stderr: string,
-}, {
-    message: string,
 }>> {
     return new Promise(res => {
         const child = spawn(command, args, { windowsHide: true, env });
@@ -57,7 +55,7 @@ export function runProcess(
 
 export async function fileExists(
     filePath: string
-): Promise<Result<boolean, { message: string}>> {
+): Promise<ErrorMessageResult<boolean>> {
     try {
         await fsPromises.access(filePath);
         return {
@@ -90,7 +88,7 @@ export async function getAvailableNameIncremental(
     directory: string,
     name: string,
     extension: string,
-): Promise<Result<string, { message: string }>> {
+): Promise<ErrorMessageResult<string>> {
     name = name.trim();
     if(name === "")
         return {
@@ -159,7 +157,7 @@ export async function setPreservedTimestamps(
     videoPath: string,
     birthtime: Date,
     mtime: Date
-): Promise<Result<undefined, { message: string}>> {
+): Promise<ErrorMessageResult<undefined>> {
     // PowerShell is needed to set the creation time of files
     await fsPromises.utimes(videoPath, birthtime, mtime);
     if(process.platform !== "win32")
@@ -205,7 +203,7 @@ export async function setPreservedTimestamps(
 
 export async function getVideoDuration(
     videoPath: string
-): Promise<Result<number, { message: string, }>> {
+): Promise<ErrorMessageResult<number>> {
     if(!ffmpegPath) {
         return {
             success: false,
@@ -238,7 +236,7 @@ export async function getVideoDuration(
 
 export async function moveFileToRecycleBin(
     filePath: string
-): Promise<Result<undefined, { message: string}>> {
+): Promise<ErrorMessageResult<undefined>> {
     try {
         await shell.trashItem(filePath);
         return {
@@ -269,10 +267,8 @@ export async function editAndApply(
     cropTop: number,
     cropBottom: number,
     renameValueNoExt?: string
-): Promise<Result<{
+): Promise<ErrorMessageResult<{
     outputPath: string,
-}, {
-    message: string
 }>> {
     const ERROR_TITLE = "Error saving edited video:";
 
@@ -455,13 +451,11 @@ export async function editAndApply(
 
 export async function getVideosInFolder(
     directory: string
-): Promise<Result<{
+): Promise<ErrorMessageResult<{
     path: string,
     name: string,
     dateModified: number,
-}[], {
-    message: string
-}>> {
+}[]>> {
     try {
         let entries = await fsPromises.readdir(directory, { withFileTypes: true });
         entries = entries.filter(entry => entry.isFile());

@@ -9,3 +9,5 @@ export type Result<T, E> = {
     success: false,
     error: E,
 };
+
+export type ErrorMessageResult<T> = Result<T, { message: string }>;

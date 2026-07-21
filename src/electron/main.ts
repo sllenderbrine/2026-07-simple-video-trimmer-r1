@@ -3,6 +3,7 @@ import { fileURLToPath } from "url";
 import fs from "fs/promises";
 import path from "path";
 import { editAndApply, getVideosInFolder } from "./ElectronUtility.js";
+import { loadSettings, saveSettings } from "./UserSettings.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -122,6 +123,15 @@ ipcMain.handle(
 // Redirect API
 ipcMain.on("open-github-repo", (event) => {
     shell.openExternal("https://github.com/sllenderbrine/2026-07-simple-video-trimmer-r1");
+});
+
+// Settings API
+ipcMain.handle("load-settings", async () => {
+    return await loadSettings();
+});
+
+ipcMain.handle("save-settings", async (_, settings) => {
+    return await saveSettings(settings);
 });
 
 // initialize
