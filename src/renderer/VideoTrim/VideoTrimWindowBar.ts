@@ -7,7 +7,6 @@ export class VideoTrimWindowBar extends WindowBar {
         public app: VideoTrimApp
     ) {
         super();
-
         
         this.addTextButton("File", () => {
             if(this.app.editorOpened) {
@@ -26,7 +25,7 @@ export class VideoTrimWindowBar extends WindowBar {
                         title: "Refresh",
                         icon: "refresh",
                         keybind: "Ctrl + R",
-                        disabled: !this.app.vdirViewer.isLoaded,
+                        disabled: !this.app.vdirViewer.loaded,
                         data: { action: "refresh", },
                     },
                     {
@@ -48,7 +47,7 @@ export class VideoTrimWindowBar extends WindowBar {
                         title: "Close Folder",
                         icon: "close-folder",
                         data: { action: "close-folder", },
-                        disabled: !this.app.vdirViewer.isLoaded,
+                        disabled: !this.app.vdirViewer.loaded,
                         dangerSeparator: true,
                     },
                     {

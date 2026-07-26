@@ -1,17 +1,21 @@
 import { ConnectionOwner } from "../../shared/EventSignals/ConnectionOwner.js";
+import { Settings } from "../../shared/VideoTrim/UserSettingsUtility.js";
 import { NotificationIconType, NotificationSystem } from "../Ui/NotificationSystem.js";
 import { StartupMenu } from "./StartupMenu.js";
 import { VdvSortMethod, VideoDirectoryViewer } from "./VideoDirectoryViewer.js";
+import { VideoTrimEditor } from "./VideoTrimEditor.js";
 import { VideoTrimWindowBar } from "./VideoTrimWindowBar.js";
 
 export class VideoTrimApp {
     contentEl: HTMLDivElement;
     excludedFileNames: Set<string> = new Set()
     vdirViewer: VideoDirectoryViewer;
+    trimEditor: VideoTrimEditor;
     startupMenu: StartupMenu;
     windowBar: VideoTrimWindowBar;
     notificationSystem: NotificationSystem;
     editorOpened: boolean = false;
+    settings?: Settings;
     connectionOwner: ConnectionOwner = new ConnectionOwner();
     constructor() {
         this.contentEl = document.createElement("div");
@@ -26,9 +30,33 @@ export class VideoTrimApp {
         const vdv = new VideoDirectoryViewer(this);
         this.vdirViewer = vdv;
         this.contentEl.appendChild(vdv.containerEl);
-        
-        this.startupMenu = new StartupMenu();
+
+        const vte = new VideoTrimEditor(this);
+        this.trimEditor = vte;
+        this.contentEl.appendChild(vte.containerEl);
+        vte.setVisible(false);
+
+        this.startupMenu = new StartupMenu(this);
         this.contentEl.appendChild(this.startupMenu.containerEl);
+
+        vdv.videoOpenEvent.connect(vdvv => {
+            vdv.setVisible(false);
+            this.editorOpened = true;
+            vte.setVisible(true);
+        }, { owners: [ this.connectionOwner ] });
+
+        window.settingsApi.load().then(res => {
+            if(res.success) {
+                this.settings = res.value;
+                this.startupMenu.updateRecents();
+            } else {
+                this.notificationSystem.sendActiveNotification({
+                    title: "Error",
+                    iconType: NotificationIconType.ERROR,
+                    description: "Error loading settings.json",
+                });
+            }
+        });
     }
 
     async promptOpenDirectory() {

@@ -1,5 +1,6 @@
 import { ConnectionOwner } from "../../shared/EventSignals/ConnectionOwner.js";
 import { HtmlConnection } from "../../shared/EventSignals/HtmlConnection.js";
+import { Signal } from "../../shared/EventSignals/Signal.js";
 import { shuffleInPlace } from "../../shared/Utility/ArrayUtility.js";
 import { pmod } from "../../shared/Utility/MathUtility.js";
 import { delay } from "../../shared/Utility/PromiseUtility.js";
@@ -13,6 +14,11 @@ let allMetadataLoaded = false;
 let metadataCompleteCount = 0;
 let allThumbnailsLoaded = false;
 let thumbnailCompleteCount = 0;
+
+async function waitUntilVdvVisible(vdv: VideoDirectoryViewer) {
+    while(!vdv.visible)
+        await delay(50);
+}
 
 async function startMetadataLoader(vdv: VideoDirectoryViewer) {
     const video = document.createElement("video");
@@ -68,6 +74,7 @@ async function startMetadataLoader(vdv: VideoDirectoryViewer) {
     }
     while(true) {
         while(!allMetadataLoaded) {
+            await waitUntilVdvVisible(vdv);
             await loadNextMetadata();
             await delay(1);
         }
@@ -168,6 +175,7 @@ async function startThumbnailLoader(vdv: VideoDirectoryViewer) {
     }
     while(true) {
         while(!allThumbnailsLoaded) {
+            await waitUntilVdvVisible(vdv);
             await loadNextThumbnail();
             if(vdv.sortMethod == VdvSortMethod.DURATION_LONG || vdv.sortMethod == VdvSortMethod.DURATION_SHORT)
                 vdv.updateVideoSort();
@@ -232,8 +240,10 @@ export class VideoDirectoryViewer {
     scrollbar?: CustomScrollbar;
     videos: VdvVideo[] = [];
     directory: string = "";
-    isLoaded: boolean = false;
+    loaded: boolean = false;
+    visible: boolean = true;
     sortMethod: VdvSortMethod = VdvSortMethod.DATE_RECENT;
+    videoOpenEvent: Signal<[vdvv: VdvVideo]> = new Signal();
     connectionOwner: ConnectionOwner = new ConnectionOwner();
     constructor(
         public app: VideoTrimApp,
@@ -315,7 +325,7 @@ export class VideoDirectoryViewer {
     }
 
     async refresh() {
-        if(!this.isLoaded)
+        if(!this.loaded)
             return;
         let res = await window.fileApi.getDirectoryFileList(this.directory);
         if(res.success) {
@@ -341,7 +351,7 @@ export class VideoDirectoryViewer {
         this.unloadVideos();
         this.progressEl.getAnimations().forEach(anim => anim.cancel());
         this.progressEl.style.opacity = "1";
-        this.isLoaded = true;
+        this.loaded = true;
         allMetadataLoaded = false;
         metadataCompleteCount = 0;
         allThumbnailsLoaded = false;
@@ -370,6 +380,9 @@ export class VideoDirectoryViewer {
             let vdvv = new VdvVideo(file.name, file.path, file.dateModified);
             content.appendChild(vdvv.containerEl);
             this.videos.push(vdvv);
+            vdvv.contentEl.addEventListener("click", () => {
+                this.videoOpenEvent.fire(vdvv);
+            });
         }
 
         this.updateVideoSort();
@@ -384,7 +397,7 @@ export class VideoDirectoryViewer {
             this.scrollbar.remove();
             delete this.scrollbar;
         }
-        this.isLoaded = false;
+        this.loaded = false;
         this.videos.forEach(video => video.remove());
         this.videos = [];
         if(!allMetadataLoaded) {
@@ -395,6 +408,16 @@ export class VideoDirectoryViewer {
                 { opacity: "1", },
                 { opacity: "0", },
             ], { duration: 700, easing: "ease-out", });
+        }
+    }
+
+    setVisible(v: boolean) {
+        if(v) {
+            this.visible = true;
+            this.containerEl.style.display = "flex";
+        } else {
+            this.visible = false;
+            this.containerEl.style.display = "none";
         }
     }
 }

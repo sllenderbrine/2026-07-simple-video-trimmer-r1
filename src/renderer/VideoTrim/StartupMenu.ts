@@ -1,9 +1,13 @@
+import type { VideoTrimApp } from "./VideoTrimApp.js";
+
 export class StartupMenu {
     containerEl: HTMLDivElement;
     columnEl0: HTMLDivElement;
     columnEl1: HTMLDivElement;
     startContainerEl: HTMLDivElement;
-    constructor() {
+    constructor(
+        public app: VideoTrimApp,
+    ) {
         this.containerEl = document.createElement("div");
         this.containerEl.classList.add("startup-container");
 
@@ -40,9 +44,15 @@ export class StartupMenu {
         this.addStartLink("Open Folder", "folder", () => {
 
         });
+
+        this.updateRecents();
     }
 
     addStartLink(title: string, icon: string, onClick: () => void) {
         
+    }
+
+    updateRecents() {
+
     }
 }

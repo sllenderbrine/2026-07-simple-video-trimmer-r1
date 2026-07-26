@@ -2,6 +2,7 @@ import type { ConnectionOwner } from "./ConnectionOwner.js";
 
 export type HtmlConnectionOptions = {
     owners?: ConnectionOwner[] | null;
+    initArgs?: any,
 }
 
 export class HtmlConnection {
@@ -17,6 +18,9 @@ export class HtmlConnection {
             const stackLines = err.stack ? err.stack.split("\n") : [];
             const callerFrame = (stackLines[2] || "").trim();
             console.warn("Warning: HtmlConnection created without any connection owners. Set parameter to null or [] to silence.\n" + callerFrame);
+        }
+        if(options.initArgs != null) {
+            this.callback(...options.initArgs);
         }
     }
     disconnect() {

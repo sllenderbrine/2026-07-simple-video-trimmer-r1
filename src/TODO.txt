@@ -4,7 +4,7 @@
 ✓ remake notification system
 ✓ remake file viewer
 - remake video editor
-- remove old video editor and file viewer code
+✓ remove old video editor and file viewer code
 
 
 
