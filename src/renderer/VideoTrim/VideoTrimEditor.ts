@@ -27,6 +27,11 @@ export class VideoTrimEditor {
         new HtmlConnection(window, "keydown", (e: KeyboardEvent) => {
             const key = e.key.toLowerCase();
             keypresses[key] = true;
+
+            if(key == " ") {
+                this.canvas.userPaused = !this.canvas.userPaused;
+                this.canvas.updateVideoPause();
+            }
         }, { owners: [ this.connectionOwner ] });
         new HtmlConnection(window, "keyup", (e: KeyboardEvent) => {
             const key = e.key.toLowerCase();

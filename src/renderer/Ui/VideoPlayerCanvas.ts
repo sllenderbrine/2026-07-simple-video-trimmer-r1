@@ -20,8 +20,16 @@ export class VideoPlayerCanvas {
     videoSizeUniformLocation: WebGLUniformLocation;
     cameraUniformLocation: WebGLUniformLocation;
     resolutionUniformLocation: WebGLUniformLocation;
+    textureUniformLocation: WebGLUniformLocation;
+    texture: WebGLTexture;
     visible: boolean = true;
     fitToContainerLock: boolean = true;
+    userPaused: boolean = false;
+    seeking: boolean = false;
+    targetSeekTime: number | null = null;
+    loading: boolean = false;
+    targetUrl: string | null = null;
+    videoLoaded: boolean = false;
     camera: Vec3 = new Vec3(0, 0, 1);
     videoWidth: number = 1920;
     videoHeight: number = 1080;
@@ -63,10 +71,12 @@ export class VideoPlayerCanvas {
             
             in vec2 v_texcoord;
 
+            uniform sampler2D u_texture;
+
             out vec4 outColor;
 
             void main() {
-                outColor = vec4(v_texcoord, 0, 1);
+                outColor = texture(u_texture, v_texcoord);
             }
         `);
 
@@ -87,18 +97,29 @@ export class VideoPlayerCanvas {
         this.quadTexcoordBuffer = createAttributeBuffer(gl, this.program, "a_texcoord", this.quadVao, "vec2");
         gl.bindBuffer(gl.ARRAY_BUFFER, this.quadTexcoordBuffer);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-            0, 0,
-            1, 0,
-            1, 1,
-            0, 0,
-            1, 1,
             0, 1,
+            1, 1,
+            1, 0,
+            0, 1,
+            1, 0,
+            0, 0,
         ]), gl.STATIC_DRAW);
         gl.bindVertexArray(this.quadVao);
 
         this.resolutionUniformLocation = getUniformLocation(gl, this.program, "u_resolution");
         this.videoSizeUniformLocation = getUniformLocation(gl, this.program, "u_video_size");
         this.cameraUniformLocation = getUniformLocation(gl, this.program, "u_camera");
+        this.textureUniformLocation = getUniformLocation(gl, this.program, "u_texture");
+
+        this.texture = gl.createTexture();
+        gl.activeTexture(gl.TEXTURE0)
+        gl.bindTexture(gl.TEXTURE_2D, this.texture);
+        gl.uniform1i(this.textureUniformLocation, 0);
+        gl.generateMipmap(gl.TEXTURE_2D);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 
         this.updateVideoSizeUniform();
         this.updateCameraUniform();
@@ -108,6 +129,18 @@ export class VideoPlayerCanvas {
                 return;
             this.updateContainerSize();
         }, { owners: [ this.connectionOwner ], initArgs: [] });
+
+        const renderFrame = () => {
+            if(!this.videoLoaded) {
+                return requestAnimationFrame(renderFrame);
+            }
+
+            this.updateVideoFrameTexture();
+            this.render();
+
+            return this.videoEl.requestVideoFrameCallback(renderFrame);
+        }
+        renderFrame();
     }
 
     updateCameraUniform() {
@@ -141,6 +174,12 @@ export class VideoPlayerCanvas {
         const gl = this.gl;
         gl.clear(gl.COLOR_BUFFER_BIT);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
+    }
+
+    updateVideoFrameTexture() {
+        const gl = this.gl;
+        this.texCtx.drawImage(this.videoEl, 0, 0);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.textureCanvasEl);
     }
 
     zoomToCenterFitContainer() {
@@ -198,6 +237,96 @@ export class VideoPlayerCanvas {
         this.camera.y += y;
         this.updateCameraUniform();
         this.render();
+    }
+
+    unloadVideo() {
+        this.videoEl.removeAttribute("src");
+        this.videoEl.load();
+        this.videoLoaded = false;
+    }
+
+    async setUrl(url: string) {
+        if(this.loading) {
+            this.targetUrl = url;
+            return;
+        }
+        this.videoLoaded = false;
+        this.loading = true;
+        await new Promise<void>(res => {
+            let connections = new ConnectionOwner();
+            new HtmlConnection(this.videoEl, "canplay", () => {
+                connections.disconnectAll();
+                res();
+            }, { owners: [this.connectionOwner, connections] });
+            this.videoEl.src = url;
+        });
+        this.loading = false;
+        this.videoLoaded = true;
+        this.videoWidth = this.videoEl.videoWidth;
+        this.videoHeight = this.videoEl.videoHeight;
+        this.updateVideoSizeUniform();
+        this.textureCanvasEl.width = this.videoWidth;
+        this.textureCanvasEl.height = this.videoHeight;
+        this.handleTargetUrl();
+        this.updateVideoPause();
+    }
+
+    handleTargetUrl() {
+        if(this.targetUrl == null)
+            return;
+        return requestAnimationFrame(() => {
+            let url2 = this.targetUrl;
+            if(url2 == null)
+                return;
+            this.targetUrl = null;
+            this.setUrl(url2);
+        });
+    }
+
+    async seekTo(t: number) {
+        if(!this.videoLoaded)
+            return;
+        if(this.seeking) {
+            this.targetSeekTime = t;
+            return;
+        }
+        this.seeking = true;
+        await new Promise<void>(res => {
+            let connections = new ConnectionOwner();
+            new HtmlConnection(this.videoEl, "seeked", () => {
+                connections.disconnectAll();
+                res();
+            }, { owners: [ this.connectionOwner, connections ] });
+            this.videoEl.currentTime = t;
+        });
+        this.seeking = false;
+        this.handleTargetSeek();
+        this.updateVideoPause();
+    }
+
+    handleTargetSeek() {
+        if(this.targetSeekTime == null)
+            return;
+        return requestAnimationFrame(() => {
+            let t2 = this.targetSeekTime;
+            if(t2 == null)
+                return;
+            this.targetSeekTime = null;
+            this.seekTo(t2);
+        });
+    }
+
+    updateVideoPause() {
+        let pause = false;
+        if(this.seeking || this.userPaused || !this.videoLoaded) {
+            pause = true;
+        }
+        if(pause == this.videoEl.paused)
+            return
+        if(pause)
+            this.videoEl.pause();
+        else
+            this.videoEl.play();
     }
 
     setVisible(v: boolean) {

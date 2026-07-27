@@ -40,9 +40,10 @@ export class VideoTrimApp {
         this.contentEl.appendChild(this.startupMenu.containerEl);
 
         vdv.videoOpenEvent.connect(vdvv => {
-            vdv.setVisible(false);
             this.editorOpened = true;
+            vdv.setVisible(false);
             vte.setVisible(true);
+            this.trimEditor.canvas.setUrl(vdvv.path);
         }, { owners: [ this.connectionOwner ] });
 
         window.settingsApi.load().then(res => {
@@ -133,6 +134,14 @@ export class VideoTrimApp {
                 if(locked) {
                     this.trimEditor.canvas.zoomToCenterFitContainer();
                     this.trimEditor.canvas.render();
+                }
+                break;
+            case "close-editor":
+                if(this.editorOpened) {
+                    this.editorOpened = false;
+                    this.vdirViewer.setVisible(true);
+                    this.trimEditor.setVisible(false);
+                    this.trimEditor.canvas.unloadVideo();
                 }
                 break;
             case "exit":
