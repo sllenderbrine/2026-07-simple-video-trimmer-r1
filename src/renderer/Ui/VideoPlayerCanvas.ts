@@ -53,7 +53,7 @@ export class VideoPlayerCanvas {
             out vec2 v_texcoord;
 
             void main() {
-                vec2 pos = a_position / u_resolution * u_video_size * u_camera.z + u_camera.xy;
+                vec2 pos = (a_position * u_video_size / 2.0 * u_camera.z - u_camera.xy) / (u_resolution / 2.0);
                 gl_Position = vec4(pos, 0, 1);
                 v_texcoord = a_texcoord;
             }
@@ -112,7 +112,7 @@ export class VideoPlayerCanvas {
 
     updateCameraUniform() {
         const gl = this.gl
-        gl.uniform3f(this.cameraUniformLocation, this.camera.x, this.camera.y, this.camera.z);
+        gl.uniform3f(this.cameraUniformLocation, this.camera.x, -this.camera.y, this.camera.z);
     }
 
     updateVideoSizeUniform() {
@@ -146,6 +146,8 @@ export class VideoPlayerCanvas {
     zoomToCenterFitContainer() {
         const width = this.containerEl.clientWidth;
         const height = this.containerEl.clientHeight;
+        this.camera.x = 0;
+        this.camera.y = 0;
         if(this.videoWidth / this.videoHeight > width / height) {
             this.camera.z = width / this.videoWidth;
         } else {
@@ -155,11 +157,47 @@ export class VideoPlayerCanvas {
     }
 
     zoomToCenterActualSize() {
-
+        this.camera.x = 0;
+        this.camera.y = 0;
+        this.camera.z = 1;
+        this.updateCameraUniform();
     }
 
     zoomToCenter() {
+        this.camera.x = 0;
+        this.camera.y = 0;
+        this.updateCameraUniform();
+    }
 
+    zoomInTo(sx: number, sy: number, by: number) {
+        const rect = this.renderCanvasEl.getBoundingClientRect();
+        let videoClientWidth = this.videoWidth * this.camera.z;
+        let videoClientHeight = this.videoHeight * this.camera.z;
+        const videoClientCenterX = rect.left + rect.width / 2 - this.camera.x;
+        const videoClientCenterY = rect.top + rect.height / 2 - this.camera.y;
+        const mxT = (sx - videoClientCenterX) / videoClientWidth;
+        const myT = (sy - videoClientCenterY) / videoClientHeight;
+        this.camera.x -= sx - videoClientCenterX;
+        this.camera.y -= sy - videoClientCenterY;
+        this.camera.z *= by;
+        videoClientWidth = this.videoWidth * this.camera.z;
+        videoClientHeight = this.videoHeight * this.camera.z;
+        this.camera.x += mxT * videoClientWidth;
+        this.camera.y += myT * videoClientHeight;
+        this.updateCameraUniform();
+        this.render();
+    }
+
+    zoomInToContainerCenter(by: number) {
+        const rect = this.renderCanvasEl.getBoundingClientRect();
+        this.zoomInTo(rect.left + rect.width / 2, rect.top + rect.height / 2, by);
+    }
+
+    shift(x: number, y: number) {
+        this.camera.x += x;
+        this.camera.y += y;
+        this.updateCameraUniform();
+        this.render();
     }
 
     setVisible(v: boolean) {

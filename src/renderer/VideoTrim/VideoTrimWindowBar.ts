@@ -11,7 +11,18 @@ export class VideoTrimWindowBar extends WindowBar {
         this.addTextButton("File", () => {
             if(this.app.editorOpened) {
                 return [
-
+                    {
+                        title: "Close Video",
+                        icon: "back",
+                        data: { action: "close-editor", },
+                        dangerSeparator: true,
+                    },
+                    {
+                        title: "Exit",
+                        icon: "small-cross",
+                        data: { action: "exit", },
+                        danger: true,
+                    },
                 ];
             } else {
                 return [
@@ -84,7 +95,12 @@ export class VideoTrimWindowBar extends WindowBar {
         this.addTextButton("View", () => {
             if(this.app.editorOpened) {
                 return [
-
+                    {
+                        title: "Free Move",
+                        keybind: "Ctrl + 0",
+                        icon: this.app.trimEditor.canvas.fitToContainerLock ? undefined : "small-check",
+                        data: { action: "toggle-free-move", },
+                    }
                 ];
             } else {
                 return [

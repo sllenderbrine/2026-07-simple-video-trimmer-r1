@@ -14,4 +14,4 @@
  > on lossless, snap the trim handles to each i-frame on renderer side
 - add option for export quality and compression
 - add support for other video file types
-- ctrl + scroll to zoom in on parts of video in editor and mousewheel + drag to move around (for viewing only)
+✓ ctrl + scroll to zoom in on parts of video in editor and mousewheel + drag to move around (for viewing only)

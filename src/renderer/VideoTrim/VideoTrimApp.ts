@@ -127,6 +127,14 @@ export class VideoTrimApp {
                 this.vdirViewer.sortMethod = VdvSortMethod.OTHER_RANDOM;
                 this.vdirViewer.updateVideoSort();
                 break;
+            case "toggle-free-move":
+                let locked = !this.trimEditor.canvas.fitToContainerLock;
+                this.trimEditor.canvas.fitToContainerLock = locked;
+                if(locked) {
+                    this.trimEditor.canvas.zoomToCenterFitContainer();
+                    this.trimEditor.canvas.render();
+                }
+                break;
             case "exit":
                 window.windowApi.close();
                 break;
