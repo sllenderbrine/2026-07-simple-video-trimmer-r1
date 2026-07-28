@@ -94,6 +94,42 @@ export class VideoTrimWindowBar extends WindowBar {
                         icon: "redo",
                         data: { action: "redo-editor", },
                     },
+                    {
+                        title: "Crop Preset",
+                        icon: "crop",
+                        children: [
+                            {
+                                title: "None",
+                                icon: "small-check",
+                                data: { action: "editor-crop-none" },
+                            },
+                            {
+                                title: "Left Half",
+                                icon: "",
+                                data: { action: "editor-crop-left-half" },
+                            },
+                            {
+                                title: "Right Half",
+                                icon: "",
+                                data: { action: "editor-crop-right-half" },
+                            },
+                            {
+                                title: "Top Half",
+                                icon: "",
+                                data: { action: "editor-crop-top-half" },
+                            },
+                            {
+                                title: "Bottom Half",
+                                icon: "",
+                                data: { action: "editor-crop-bottom-half" },
+                            },
+                            {
+                                title: "Custom...",
+                                icon: "",
+                                data: { action: "editor-crop-prompt-custom" },
+                            },
+                        ],
+                    },
                 ];
             } else {
                 return [
