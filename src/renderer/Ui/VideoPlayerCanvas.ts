@@ -1,5 +1,6 @@
 import { ConnectionOwner } from "../../shared/EventSignals/ConnectionOwner.js";
 import { HtmlConnection } from "../../shared/EventSignals/HtmlConnection.js";
+import { Signal } from "../../shared/EventSignals/Signal.js";
 import { get2dContext } from "../../shared/Utility/Canvas2dUtility.js";
 import { createAttributeBuffer, createProgram, createShader, getUniformLocation, getWebGl2Context } from "../../shared/Utility/WebGl2Utility.js";
 import { Vec3 } from "../../shared/Vectors/Vec3.js";
@@ -29,10 +30,15 @@ export class VideoPlayerCanvas {
     targetSeekTime: number | null = null;
     loading: boolean = false;
     targetUrl: string | null = null;
+    inputtingSeek: boolean = false;
     videoLoaded: boolean = false;
     camera: Vec3 = new Vec3(0, 0, 1);
     videoWidth: number = 1920;
     videoHeight: number = 1080;
+    minSeek: number = 0;
+    maxSeek: number | null = null;
+    looped: boolean = false;
+    renderEvent: Signal<[]> = new Signal();
     connectionOwner: ConnectionOwner = new ConnectionOwner();
     constructor() {
         this.containerEl = document.createElement("div");
@@ -129,18 +135,60 @@ export class VideoPlayerCanvas {
                 return;
             this.updateContainerSize();
         }, { owners: [ this.connectionOwner ], initArgs: [] });
+        
+        new HtmlConnection(this.videoEl, "ended", () => {
+            if(!this.visible)
+                return;
+            if(!this.getShouldPause()) {
+                if(this.looped) {
+                    this.seekTo(this.minSeek);
+                } else {
+                    this.userPaused = true;
+                }
+            }
+        }, { owners: [ this.connectionOwner ], initArgs: [] });
 
-        const renderFrame = () => {
+        const updateLoop = () => {
             if(!this.videoLoaded) {
-                return requestAnimationFrame(renderFrame);
+                return requestAnimationFrame(updateLoop);
+            }
+            
+            const paused = this.getShouldPause();
+            if(paused != this.videoEl.paused) {
+                if(paused)
+                    this.videoEl.pause();
+                else
+                    this.videoEl.play();
+            }
+
+            if(this.videoEl.currentTime < this.minSeek) {
+                this.seekTo(this.minSeek);
+            }
+            if(this.maxSeek != null && this.videoEl.currentTime >= this.maxSeek) {
+                if(this.looped && !this.videoEl.paused) {
+                    this.seekTo(this.minSeek);
+                } else {
+                    this.userPaused = true;
+                    this.seekTo(this.maxSeek);
+                }
+            }
+
+            return requestAnimationFrame(updateLoop);
+        }
+        const renderLoop = () => {
+            if(!this.videoLoaded) {
+                return requestAnimationFrame(renderLoop);
             }
 
             this.updateVideoFrameTexture();
             this.render();
 
-            return this.videoEl.requestVideoFrameCallback(renderFrame);
+            this.renderEvent.fire();
+
+            return this.videoEl.requestVideoFrameCallback(renderLoop);
         }
-        renderFrame();
+        updateLoop();
+        renderLoop();
     }
 
     updateCameraUniform() {
@@ -268,7 +316,6 @@ export class VideoPlayerCanvas {
         this.textureCanvasEl.width = this.videoWidth;
         this.textureCanvasEl.height = this.videoHeight;
         this.handleTargetUrl();
-        this.updateVideoPause();
     }
 
     handleTargetUrl() {
@@ -301,7 +348,6 @@ export class VideoPlayerCanvas {
         });
         this.seeking = false;
         this.handleTargetSeek();
-        this.updateVideoPause();
     }
 
     handleTargetSeek() {
@@ -316,17 +362,18 @@ export class VideoPlayerCanvas {
         });
     }
 
-    updateVideoPause() {
-        let pause = false;
-        if(this.seeking || this.userPaused || !this.videoLoaded) {
-            pause = true;
+    getShouldPause() {
+        if(this.seeking || this.inputtingSeek || this.userPaused || !this.videoLoaded) {
+            return true;
         }
-        if(pause == this.videoEl.paused)
-            return
-        if(pause)
-            this.videoEl.pause();
-        else
-            this.videoEl.play();
+        return false;
+    }
+
+    play() {
+        this.userPaused = false;
+        if(this.maxSeek != null && this.videoEl.currentTime >= this.maxSeek) {
+            this.seekTo(this.minSeek);
+        }
     }
 
     setVisible(v: boolean) {

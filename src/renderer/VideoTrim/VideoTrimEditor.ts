@@ -3,6 +3,7 @@ import { renderEvent } from "../../shared/EventSignals/events/RenderEvent.js";
 import { HtmlConnection } from "../../shared/EventSignals/HtmlConnection.js";
 import { VideoPlayerCanvas } from "../Ui/VideoPlayerCanvas.js";
 import type { VideoTrimApp } from "./VideoTrimApp.js";
+import { VteBottomBar } from "./VteBottomBar.js";
 
 const SHIFT_SPEED = 50;
 const PRECISE_SHIFT_SPEED = 250;
@@ -12,6 +13,7 @@ const PRECISE_ZOOM_SPEED = 1.01;
 export class VideoTrimEditor {
     containerEl: HTMLDivElement;
     canvas: VideoPlayerCanvas;
+    bottomBar: VteBottomBar;
     visible: boolean = true;
     connectionOwner: ConnectionOwner = new ConnectionOwner();
     constructor(
@@ -26,8 +28,11 @@ export class VideoTrimEditor {
         this.app.keyDownEvent.connect(e => {
             const key = e.key.toLowerCase();
             if(key == " ") {
-                this.canvas.userPaused = !this.canvas.userPaused;
-                this.canvas.updateVideoPause();
+                if(this.canvas.userPaused) {
+                    this.canvas.play();
+                } else {
+                    this.canvas.userPaused = true;
+                }
             }
         }, { owners: [ this.connectionOwner ] })
         new HtmlConnection(window, "wheel", (e: WheelEvent) => {
@@ -50,12 +55,42 @@ export class VideoTrimEditor {
                 if(mx !== 0 || my !== 0) {
                     this.canvas.shift(mx * dt * PRECISE_SHIFT_SPEED, my * dt * PRECISE_SHIFT_SPEED);
                 }
-                let dz = (this.app.keypresses["="] ? PRECISE_ZOOM_SPEED : 1) * (this.app.keypresses["-"] ? 1 / PRECISE_ZOOM_SPEED : 1)
+                let dz = (this.app.keypresses["="] ? PRECISE_ZOOM_SPEED : 1) * (this.app.keypresses["-"] ? 1 / PRECISE_ZOOM_SPEED : 1);
                 if(dz !== 1) {
                     this.canvas.zoomInToContainerCenter(dz);
                 }
             }
         }, { owners: [ this.connectionOwner ] });
+
+        this.bottomBar = new VteBottomBar(this);
+        this.containerEl.appendChild(this.bottomBar.containerEl);
+
+        let seekInputT = 0;
+        this.bottomBar.seekInputEvent.connect(t => {
+            seekInputT = t;
+            this.canvas.seekTo(t);
+        }, { owners: [ this.connectionOwner, ], });
+        this.bottomBar.seekStartEvent.connect(() => {
+            this.canvas.inputtingSeek = true;
+        }, { owners: [ this.connectionOwner, ], });
+        this.bottomBar.seekEndEvent.connect(() => {
+            if(!this.canvas.userPaused) {
+                if(this.canvas.maxSeek && seekInputT >= this.canvas.maxSeek) {
+                    if(this.canvas.looped) {
+                        this.canvas.seekTo(this.canvas.minSeek);
+                    } else {
+                        this.canvas.userPaused = true;
+                    }
+                } else if(seekInputT >= this.canvas.videoEl.duration) {
+                    if(this.canvas.looped) {
+                        this.canvas.seekTo(this.canvas.minSeek);
+                    } else {
+                        this.canvas.userPaused = true;
+                    }
+                }
+            }
+            this.canvas.inputtingSeek = false;
+        }, { owners: [ this.connectionOwner, ], });
     }
 
     setVisible(v: boolean) {

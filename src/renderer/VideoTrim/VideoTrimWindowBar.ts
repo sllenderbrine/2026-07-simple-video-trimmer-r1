@@ -24,6 +24,21 @@ export class VideoTrimWindowBar extends WindowBar {
                         title: "Close Video",
                         icon: "back",
                         data: { action: "close-editor", },
+                        separator: true,
+                    },
+                    {
+                        title: "Save...",
+                        icon: "save",
+                        iconScale: 0.95,
+                        keybind: "Ctrl + S",
+                        data: { action: "save-editor", },
+                    },
+                    {
+                        title: "Save As...",
+                        icon: "save-as",
+                        iconScale: 1.15,
+                        keybind: "Ctrl + Shift + S",
+                        data: { action: "save-as-editor", },
                         dangerSeparator: true,
                     },
                     {
@@ -93,6 +108,7 @@ export class VideoTrimWindowBar extends WindowBar {
                         keybind: "Ctrl + Shift + Z",
                         icon: "redo",
                         data: { action: "redo-editor", },
+                        separator: true,
                     },
                     {
                         title: "Crop Preset",
@@ -141,11 +157,16 @@ export class VideoTrimWindowBar extends WindowBar {
             if(this.app.editorOpened) {
                 return [
                     {
+                        title: "Loop Video",
+                        icon: this.app.trimEditor.canvas.looped ? "small-check" : undefined,
+                        data: { action: "toggle-loop-editor", },
+                    },
+                    {
                         title: "Free Move",
                         keybind: "Ctrl + 0",
                         icon: this.app.trimEditor.canvas.fitToContainerLock ? undefined : "small-check",
                         data: { action: "toggle-free-move", },
-                    }
+                    },
                 ];
             } else {
                 return [

@@ -14,6 +14,7 @@ export type ContextMenuLayout = {
     tooltip?: string,
     disabled?: boolean,
     icon?: string,
+    iconScale?: number,
     data?: any,
     children?: ContextMenuLayout[],
     separator?: boolean,
@@ -73,6 +74,7 @@ export class ContextMenuButton {
         tooltip: string | null = null,
         disabled: boolean = false,
         icon: string | null = null,
+        iconScale: number | null = null,
         data: any = null,
         children: ContextMenuLayout[] | null = null,
     ) {
@@ -91,7 +93,7 @@ export class ContextMenuButton {
         this.setDisabled(disabled);
         this.setTooltip(tooltip);
         this.setKeybind(keybind);
-        this.setIcon(icon);
+        this.setIcon(icon, iconScale);
         this.setChildrenLayout(children);
 
         this.data = data;
@@ -133,7 +135,7 @@ export class ContextMenuButton {
         delete this.prefixIconEl;
     }
 
-    setIcon(icon?: string | null) {
+    setIcon(icon?: string | null, iconScale?: number | null) {
         this.addIconMargin();
         this.prefixIconEl!.innerHTML = "";
         if(icon == null)
@@ -143,6 +145,7 @@ export class ContextMenuButton {
         iconContainer.classList.add("ctxm-icon");
         fetch(joinPaths(PATH_ICONS, icon + ".svg")).then(res => res.text()).then(inner => {
             iconContainer.innerHTML = inner;
+            iconContainer.style.scale = `${iconScale ?? 1}`;
         });
     }
 
@@ -279,6 +282,7 @@ export class ContextMenu {
                 itemLayout.tooltip,
                 itemLayout.disabled,
                 itemLayout.icon,
+                itemLayout.iconScale,
                 itemLayout.data,
                 itemLayout.children,
             );

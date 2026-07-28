@@ -164,6 +164,11 @@ export class VideoTrimApp {
                     this.trimEditor.canvas.unloadVideo();
                 }
                 break;
+            case "toggle-loop-editor":
+                if(this.editorOpened) {
+                    this.trimEditor.canvas.looped = !this.trimEditor.canvas.looped;
+                }
+                break;
             case "exit":
                 window.windowApi.close();
                 break;
