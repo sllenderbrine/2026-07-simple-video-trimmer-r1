@@ -23,21 +23,16 @@ export class VideoTrimEditor {
         this.canvas = new VideoPlayerCanvas();
         this.containerEl.appendChild(this.canvas.containerEl);
         
-        const keypresses: { [key:string]: boolean } = {};
-        new HtmlConnection(window, "keydown", (e: KeyboardEvent) => {
+        this.app.keyDownEvent.connect(e => {
             const key = e.key.toLowerCase();
-            keypresses[key] = true;
-
             if(key == " ") {
                 this.canvas.userPaused = !this.canvas.userPaused;
                 this.canvas.updateVideoPause();
             }
-        }, { owners: [ this.connectionOwner ] });
-        new HtmlConnection(window, "keyup", (e: KeyboardEvent) => {
-            const key = e.key.toLowerCase();
-            delete keypresses[key];
-        }, { owners: [ this.connectionOwner ] });
+        }, { owners: [ this.connectionOwner ] })
         new HtmlConnection(window, "wheel", (e: WheelEvent) => {
+            if(e.ctrlKey)
+                this.canvas.fitToContainerLock = false
             if(!this.canvas.fitToContainerLock) {
                 if(e.ctrlKey) {
                     this.canvas.zoomInTo(e.clientX, e.clientY, e.deltaY < 0 ? ZOOM_SPEED : 1 / ZOOM_SPEED);
@@ -50,12 +45,12 @@ export class VideoTrimEditor {
         }, { owners: [ this.connectionOwner ] });
         renderEvent.connect(dt => {
             if(!this.canvas.fitToContainerLock) {
-                let mx = (keypresses["a"] ? -1 : 0) + (keypresses["d"] ? 1 : 0);
-                let my = (keypresses["s"] ? 1 : 0) + (keypresses["w"] ? -1 : 0);
+                let mx = (this.app.keypresses["a"] ? -1 : 0) + (this.app.keypresses["d"] ? 1 : 0);
+                let my = (this.app.keypresses["s"] ? 1 : 0) + (this.app.keypresses["w"] ? -1 : 0);
                 if(mx !== 0 || my !== 0) {
                     this.canvas.shift(mx * dt * PRECISE_SHIFT_SPEED, my * dt * PRECISE_SHIFT_SPEED);
                 }
-                let dz = (keypresses["="] ? PRECISE_ZOOM_SPEED : 1) * (keypresses["-"] ? 1 / PRECISE_ZOOM_SPEED : 1)
+                let dz = (this.app.keypresses["="] ? PRECISE_ZOOM_SPEED : 1) * (this.app.keypresses["-"] ? 1 / PRECISE_ZOOM_SPEED : 1)
                 if(dz !== 1) {
                     this.canvas.zoomInToContainerCenter(dz);
                 }

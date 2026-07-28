@@ -1,12 +1,21 @@
+import { ConnectionOwner } from "../../shared/EventSignals/ConnectionOwner.js";
 import { WindowBar, WindowBarSide } from "../Ui/WindowBar.js";
 import { VdvSortMethod } from "./VideoDirectoryViewer.js";
 import type { VideoTrimApp } from "./VideoTrimApp.js";
 
 export class VideoTrimWindowBar extends WindowBar {
+    connectionOwner: ConnectionOwner = new ConnectionOwner();
     constructor(
         public app: VideoTrimApp
     ) {
         super();
+
+        app.keyDownEvent.connect((e) => {
+            const key = e.key.toLowerCase();
+            if(key == "0" && e.ctrlKey) {
+                this.app.runAppAction("toggle-free-move");
+            }
+        }, { owners: [ this.connectionOwner ] });
         
         this.addTextButton("File", () => {
             if(this.app.editorOpened) {

@@ -1,4 +1,6 @@
 import { ConnectionOwner } from "../../shared/EventSignals/ConnectionOwner.js";
+import { HtmlConnection } from "../../shared/EventSignals/HtmlConnection.js";
+import { Signal } from "../../shared/EventSignals/Signal.js";
 import { Settings } from "../../shared/VideoTrim/UserSettingsUtility.js";
 import { NotificationIconType, NotificationSystem } from "../Ui/NotificationSystem.js";
 import { StartupMenu } from "./StartupMenu.js";
@@ -16,6 +18,9 @@ export class VideoTrimApp {
     notificationSystem: NotificationSystem;
     editorOpened: boolean = false;
     settings?: Settings;
+    keypresses: { [key: string]: boolean } = {};
+    keyDownEvent: Signal<[e: KeyboardEvent]> = new Signal();
+    keyUpEvent: Signal<[e: KeyboardEvent]> = new Signal();
     connectionOwner: ConnectionOwner = new ConnectionOwner();
     constructor() {
         this.contentEl = document.createElement("div");
@@ -43,6 +48,7 @@ export class VideoTrimApp {
             this.editorOpened = true;
             vdv.setVisible(false);
             vte.setVisible(true);
+            this.trimEditor.canvas.userPaused = false;
             this.trimEditor.canvas.setUrl(vdvv.path);
         }, { owners: [ this.connectionOwner ] });
 
@@ -58,6 +64,18 @@ export class VideoTrimApp {
                 });
             }
         });
+
+        new HtmlConnection(window, "keydown", (e: KeyboardEvent) => {
+            const key = e.key.toLowerCase();
+            this.keypresses[key] = true;
+            this.keyDownEvent.fire(e);
+        }, { owners: [ this.connectionOwner ] });
+
+        new HtmlConnection(window, "keyup", (e: KeyboardEvent) => {
+            const key = e.key.toLowerCase();
+            delete this.keypresses[key];
+            this.keyUpEvent.fire(e);
+        }, { owners: [ this.connectionOwner ] });
     }
 
     async promptOpenDirectory() {
@@ -129,11 +147,13 @@ export class VideoTrimApp {
                 this.vdirViewer.updateVideoSort();
                 break;
             case "toggle-free-move":
-                let locked = !this.trimEditor.canvas.fitToContainerLock;
-                this.trimEditor.canvas.fitToContainerLock = locked;
-                if(locked) {
-                    this.trimEditor.canvas.zoomToCenterFitContainer();
-                    this.trimEditor.canvas.render();
+                if(this.editorOpened) {
+                    let locked = !this.trimEditor.canvas.fitToContainerLock;
+                    this.trimEditor.canvas.fitToContainerLock = locked;
+                    if(locked) {
+                        this.trimEditor.canvas.zoomToCenterFitContainer();
+                        this.trimEditor.canvas.render();
+                    }
                 }
                 break;
             case "close-editor":
