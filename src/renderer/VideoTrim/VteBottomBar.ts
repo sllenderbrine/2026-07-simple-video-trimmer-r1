@@ -82,12 +82,14 @@ export class VteBottomBar {
         new HtmlConnection(window, "mousemove", (e: MouseEvent) => {
             hoverTimeout = 2;
             if(e.clientY >= window.innerHeight - 100) {
+                this.hovering = true;
                 if(animConnection != null) {
                     animConnection.disconnect();
                     animConnection = null
                 }
                 return;
             }
+            this.hovering = false;
             if(animConnection == null) {
                 const rect = this.containerEl.getBoundingClientRect();
                 let currY = window.innerHeight - (rect.top + rect.height);

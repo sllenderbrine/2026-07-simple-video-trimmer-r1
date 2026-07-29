@@ -315,6 +315,7 @@ export class VideoPlayerCanvas {
         this.updateVideoSizeUniform();
         this.textureCanvasEl.width = this.videoWidth;
         this.textureCanvasEl.height = this.videoHeight;
+        this.zoomToCenterFitContainer();
         this.handleTargetUrl();
     }
 

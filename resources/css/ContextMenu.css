@@ -43,11 +43,11 @@
 }
 
 .ctxm-container-danger {
-    background-image: linear-gradient(to right, rgb(48, 11, 11) 0%, rgb(20, 13, 13) 50%);
+    background-image: linear-gradient(to right, rgb(77, 46, 49) 0%, rgb(20, 13, 13) 50%);
 }
 
 .ctxm-container-danger .ctxm-button:hover {
-    background-color: rgb(58, 33, 33);
+    background-color: rgb(94, 59, 63);
 }
 
 .ctxm-title {
@@ -90,7 +90,7 @@
 
 .ctxm-separator-danger {
     position: relative;
-    background-image: linear-gradient(to right, black 0%, rgb(87, 19, 19) 30%, rgb(87, 19, 19) 70%, black 100%);
+    background-image: linear-gradient(to right, black 0%, rgb(148, 87, 95) 30%, rgb(148, 87, 95) 70%, black 100%);
     width: 90%;
     height: 1px;
     align-self: center;

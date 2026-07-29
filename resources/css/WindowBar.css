@@ -62,7 +62,7 @@
 }
 
 .wbar-button-danger:hover .wbar-button {
-    background-color: rgb(226, 18, 18);
+    background-color: rgb(182, 103, 114);
 }
 
 .wbar-title {
@@ -91,7 +91,7 @@
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    background-color: rgb(226, 18, 18);
+    background-color: rgb(182, 103, 114);
     position: absolute;
     left: 22px;
     top: 6px;

@@ -36,20 +36,22 @@ export class VideoTrimEditor {
             }
         }, { owners: [ this.connectionOwner ] })
         new HtmlConnection(window, "wheel", (e: WheelEvent) => {
-            if(e.ctrlKey)
-                this.canvas.fitToContainerLock = false
-            if(!this.canvas.fitToContainerLock) {
-                if(e.ctrlKey) {
-                    this.canvas.zoomInTo(e.clientX, e.clientY, e.deltaY < 0 ? ZOOM_SPEED : 1 / ZOOM_SPEED);
-                } else if(e.shiftKey) {
-                    this.canvas.shift(e.deltaY > 0 ? SHIFT_SPEED : -SHIFT_SPEED, 0);
-                } else {
-                    this.canvas.shift(0, e.deltaY > 0 ? SHIFT_SPEED : -SHIFT_SPEED);
+            if(!this.bottomBar.hovering) {
+                if(e.ctrlKey)
+                    this.canvas.fitToContainerLock = false
+                if(!this.canvas.fitToContainerLock) {
+                    if(e.ctrlKey) {
+                        this.canvas.zoomInTo(e.clientX, e.clientY, e.deltaY < 0 ? ZOOM_SPEED : 1 / ZOOM_SPEED);
+                    } else if(e.shiftKey) {
+                        this.canvas.shift(e.deltaY > 0 ? SHIFT_SPEED : -SHIFT_SPEED, 0);
+                    } else {
+                        this.canvas.shift(0, e.deltaY > 0 ? SHIFT_SPEED : -SHIFT_SPEED);
+                    }
                 }
             }
         }, { owners: [ this.connectionOwner ] });
         renderEvent.connect(dt => {
-            if(!this.canvas.fitToContainerLock) {
+            if(!this.canvas.fitToContainerLock && !this.bottomBar.hovering) {
                 let mx = (this.app.keypresses["a"] ? -1 : 0) + (this.app.keypresses["d"] ? 1 : 0);
                 let my = (this.app.keypresses["s"] ? 1 : 0) + (this.app.keypresses["w"] ? -1 : 0);
                 if(mx !== 0 || my !== 0) {
@@ -98,6 +100,7 @@ export class VideoTrimEditor {
             this.containerEl.style.display = "block";
             this.visible = true;
             this.canvas.setVisible(true);
+            this.canvas.zoomToCenterFitContainer();
         } else {
             this.containerEl.style.display = "none";
             this.visible = false;

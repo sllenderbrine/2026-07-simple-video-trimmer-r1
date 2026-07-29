@@ -157,6 +157,11 @@ export class VideoTrimWindowBar extends WindowBar {
             if(this.app.editorOpened) {
                 return [
                     {
+                        title: "Take Screenshot",
+                        icon: "screenshot",
+                        data: { action: "editor-snapshot", },
+                    },
+                    {
                         title: "Loop Video",
                         icon: this.app.trimEditor.canvas.looped ? "small-check" : undefined,
                         data: { action: "toggle-loop-editor", },

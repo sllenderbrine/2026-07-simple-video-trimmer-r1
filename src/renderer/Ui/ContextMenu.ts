@@ -287,9 +287,9 @@ export class ContextMenu {
                 itemLayout.children,
             );
             if(itemLayout.danger) {
-                item.titleEl.style.color = "rgb(175, 52, 52)";
+                item.titleEl.style.color = "rgb(216, 129, 141)";
                 if(item.prefixIconEl) {
-                    item.prefixIconEl.style.color = "rgb(128, 36, 36)";
+                    item.prefixIconEl.style.color = "rgb(185, 103, 114)";
                 }
                 item.containerEl.classList.add("ctxm-container-danger");
             }
