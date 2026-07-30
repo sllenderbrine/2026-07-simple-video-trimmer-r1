@@ -6,6 +6,7 @@ import { NotificationIconType, NotificationSystem } from "../Ui/NotificationSyst
 import { StartupMenu } from "./StartupMenu.js";
 import { VdvSortMethod, VideoDirectoryViewer } from "./VideoDirectoryViewer.js";
 import { VideoTrimEditor } from "./VideoTrimEditor.js";
+import { VideoTrimSettings } from "./VideoTrimSettings.js";
 import { VideoTrimWindowBar } from "./VideoTrimWindowBar.js";
 
 export class VideoTrimApp {
@@ -17,14 +18,16 @@ export class VideoTrimApp {
     windowBar: VideoTrimWindowBar;
     notificationSystem: NotificationSystem;
     editorOpened: boolean = false;
-    settings?: Settings;
+    loaded: boolean = false;
+    settings: VideoTrimSettings;
     keypresses: { [key: string]: boolean } = {};
+    renderEvent: Signal<[dt: number]> = new Signal();
     keyDownEvent: Signal<[e: KeyboardEvent]> = new Signal();
     keyUpEvent: Signal<[e: KeyboardEvent]> = new Signal();
+    loadEvent: Signal<[]> = new Signal();
     connectionOwner: ConnectionOwner = new ConnectionOwner();
     constructor() {
         this.contentEl = document.createElement("div");
-        document.body.appendChild(this.contentEl);
         this.contentEl.classList.add("video-trim-app-content");
 
         this.windowBar = new VideoTrimWindowBar(this);
@@ -44,26 +47,17 @@ export class VideoTrimApp {
         this.startupMenu = new StartupMenu(this);
         this.contentEl.appendChild(this.startupMenu.containerEl);
 
+        this.settings = new VideoTrimSettings(this);
+        this.settings.loadEvent.connect(() => {
+            this.updateLoadedState();
+        }, { owners: [ this.connectionOwner ] })
+
         vdv.videoOpenEvent.connect(vdvv => {
             this.editorOpened = true;
             vdv.setVisible(false);
             vte.setVisible(true);
-            this.trimEditor.canvas.userPaused = false;
-            this.trimEditor.canvas.setUrl(vdvv.path);
+            vte.loadVideo(vdvv);
         }, { owners: [ this.connectionOwner ] });
-
-        window.settingsApi.load().then(res => {
-            if(res.success) {
-                this.settings = res.value;
-                this.startupMenu.updateRecents();
-            } else {
-                this.notificationSystem.sendActiveNotification({
-                    title: "Error",
-                    iconType: NotificationIconType.ERROR,
-                    description: "Error loading settings.json",
-                });
-            }
-        });
 
         new HtmlConnection(window, "keydown", (e: KeyboardEvent) => {
             const key = e.key.toLowerCase();
@@ -76,6 +70,29 @@ export class VideoTrimApp {
             delete this.keypresses[key];
             this.keyUpEvent.fire(e);
         }, { owners: [ this.connectionOwner ] });
+
+        let frame = performance.now();
+        const render = () => {
+            let now = performance.now();
+            let dt = (now - frame) / 1000;
+            frame = now;
+            this.renderEvent.fire(dt);
+            requestAnimationFrame(render);
+        }
+        render();
+
+        this.updateLoadedState();
+    }
+
+    updateLoadedState() {
+        if(this.loaded)
+            return;
+        if(this.settings.loaded) {
+            document.body.appendChild(this.contentEl);
+
+            this.loaded = true;
+            this.loadEvent.fire();
+        }
     }
 
     async promptOpenDirectory() {
@@ -85,6 +102,7 @@ export class VideoTrimApp {
             if(res.success) {
                 this.vdirViewer.loadVideos(dir, res.value);
                 this.startupMenu.containerEl.style.display = "none";
+                return dir;
             } else {
                 const notif = this.notificationSystem.sendActiveNotification({
                     title: "Error",
@@ -96,12 +114,17 @@ export class VideoTrimApp {
         } else {
 
         }
+        return null;
     }
 
     runAppAction(action: string) {
         switch(action) {
             case "open-folder":
-                this.promptOpenDirectory();
+                this.promptOpenDirectory().then(dir => {
+                    if(dir) {
+                        this.settings.addRecentFolder(dir);
+                    }
+                });
                 break;
             case "close-folder":
                 this.vdirViewer.unloadVideos();

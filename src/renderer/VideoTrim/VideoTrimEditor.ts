@@ -2,6 +2,7 @@ import { ConnectionOwner } from "../../shared/EventSignals/ConnectionOwner.js";
 import { renderEvent } from "../../shared/EventSignals/events/RenderEvent.js";
 import { HtmlConnection } from "../../shared/EventSignals/HtmlConnection.js";
 import { VideoPlayerCanvas } from "../Ui/VideoPlayerCanvas.js";
+import { VdvVideo } from "./VideoDirectoryViewer.js";
 import type { VideoTrimApp } from "./VideoTrimApp.js";
 import { VteBottomBar } from "./VteBottomBar.js";
 
@@ -15,6 +16,8 @@ export class VideoTrimEditor {
     canvas: VideoPlayerCanvas;
     bottomBar: VteBottomBar;
     visible: boolean = true;
+    undoActions: { type: string, data: any, }[] = [];
+    redoActions: { type: string, data: any, }[] = [];
     connectionOwner: ConnectionOwner = new ConnectionOwner();
     constructor(
         public app: VideoTrimApp
@@ -26,6 +29,8 @@ export class VideoTrimEditor {
         this.containerEl.appendChild(this.canvas.containerEl);
         
         this.app.keyDownEvent.connect(e => {
+            if(!this.visible)
+                return;
             const key = e.key.toLowerCase();
             if(key == " ") {
                 if(this.canvas.userPaused) {
@@ -36,6 +41,8 @@ export class VideoTrimEditor {
             }
         }, { owners: [ this.connectionOwner ] })
         new HtmlConnection(window, "wheel", (e: WheelEvent) => {
+            if(!this.visible)
+                return;
             if(!this.bottomBar.hovering) {
                 if(e.ctrlKey)
                     this.canvas.fitToContainerLock = false
@@ -51,6 +58,8 @@ export class VideoTrimEditor {
             }
         }, { owners: [ this.connectionOwner ] });
         renderEvent.connect(dt => {
+            if(!this.visible)
+                return;
             if(!this.canvas.fitToContainerLock && !this.bottomBar.hovering) {
                 let mx = (this.app.keypresses["a"] ? -1 : 0) + (this.app.keypresses["d"] ? 1 : 0);
                 let my = (this.app.keypresses["s"] ? 1 : 0) + (this.app.keypresses["w"] ? -1 : 0);
@@ -93,6 +102,23 @@ export class VideoTrimEditor {
             }
             this.canvas.inputtingSeek = false;
         }, { owners: [ this.connectionOwner, ], });
+    }
+    
+    getHasUnsavedChanges() {
+        if(!this.canvas.videoLoaded)
+            return false;
+        if(this.canvas.minSeek != 0)
+            return true;
+        if(this.canvas.maxSeek != null && this.canvas.maxSeek != this.canvas.videoEl.duration)
+            return true;
+        return false;
+    }
+
+    loadVideo(vdvv: VdvVideo) {
+        this.canvas.userPaused = false;
+        this.undoActions = [];
+        this.redoActions = [];
+        this.canvas.setUrl(vdvv.path);
     }
 
     setVisible(v: boolean) {

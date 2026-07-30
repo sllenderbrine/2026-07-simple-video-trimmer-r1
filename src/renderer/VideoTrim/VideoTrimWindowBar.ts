@@ -27,10 +27,11 @@ export class VideoTrimWindowBar extends WindowBar {
                         separator: true,
                     },
                     {
-                        title: "Save...",
+                        title: "Apply Edits",
                         icon: "save",
                         iconScale: 0.95,
                         keybind: "Ctrl + S",
+                        disabled: !this.app.trimEditor.getHasUnsavedChanges(),
                         data: { action: "save-editor", },
                     },
                     {
@@ -38,8 +39,23 @@ export class VideoTrimWindowBar extends WindowBar {
                         icon: "save-as",
                         iconScale: 1.15,
                         keybind: "Ctrl + Shift + S",
+                        disabled: !this.app.trimEditor.getHasUnsavedChanges(),
                         data: { action: "save-as-editor", },
+                    },
+                    {
+                        title: "Save As New",
+                        icon: "save-new",
+                        iconScale: 1.15,
+                        keybind: "Ctrl + Shift + N",
+                        disabled: !this.app.trimEditor.getHasUnsavedChanges(),
+                        separator: true,
+                        data: { action: "save-as-editor", },
+                    },
+                    {
+                        title: "Settings...",
+                        icon: "settings",
                         dangerSeparator: true,
+                        data: { action: "coming-soon", },
                     },
                     {
                         title: "Exit",
@@ -69,13 +85,6 @@ export class VideoTrimWindowBar extends WindowBar {
                         children: [
 
                         ],
-                        separator: true,
-                        data: { action: "coming-soon", },
-                    },
-                    {
-                        title: "Preferences...",
-                        icon: "settings",
-                        separator: true,
                         data: { action: "coming-soon", },
                     },
                     {
@@ -83,7 +92,12 @@ export class VideoTrimWindowBar extends WindowBar {
                         icon: "close-folder",
                         data: { action: "close-folder", },
                         disabled: !this.app.vdirViewer.loaded,
+                    },
+                    {
+                        title: "Settings...",
+                        icon: "settings",
                         dangerSeparator: true,
+                        data: { action: "coming-soon", },
                     },
                     {
                         title: "Exit",
@@ -101,12 +115,14 @@ export class VideoTrimWindowBar extends WindowBar {
                         title: "Undo",
                         keybind: "Ctrl + Z",
                         icon: "undo",
+                        disabled: this.app.trimEditor.undoActions.length == 0,
                         data: { action: "undo-editor", },
                     },
                     {
                         title: "Redo",
                         keybind: "Ctrl + Shift + Z",
                         icon: "redo",
+                        disabled: this.app.trimEditor.redoActions.length == 0,
                         data: { action: "redo-editor", },
                         separator: true,
                     },
@@ -121,27 +137,27 @@ export class VideoTrimWindowBar extends WindowBar {
                             },
                             {
                                 title: "Left Half",
-                                icon: "",
+                                icon: undefined,
                                 data: { action: "editor-crop-left-half" },
                             },
                             {
                                 title: "Right Half",
-                                icon: "",
+                                icon: undefined,
                                 data: { action: "editor-crop-right-half" },
                             },
                             {
                                 title: "Top Half",
-                                icon: "",
+                                icon: undefined,
                                 data: { action: "editor-crop-top-half" },
                             },
                             {
                                 title: "Bottom Half",
-                                icon: "",
+                                icon: undefined,
                                 data: { action: "editor-crop-bottom-half" },
                             },
                             {
                                 title: "Custom...",
-                                icon: "",
+                                icon: undefined,
                                 data: { action: "editor-crop-prompt-custom" },
                             },
                         ],

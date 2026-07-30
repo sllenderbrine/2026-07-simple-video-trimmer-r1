@@ -1,4 +1,4 @@
-import { _Connection } from "../../shared/EventSignals/_Connection.js";
+import { Connection } from "../../shared/EventSignals/Connection.js";
 import { ConnectionOwner } from "../../shared/EventSignals/ConnectionOwner.js";
 import { renderEvent } from "../../shared/EventSignals/events/RenderEvent.js";
 import { HtmlConnection } from "../../shared/EventSignals/HtmlConnection.js";
@@ -80,6 +80,8 @@ export class VteBottomBar {
         let animConnection: _Connection<any> | null = null;
         let hoverTimeout = 0;
         new HtmlConnection(window, "mousemove", (e: MouseEvent) => {
+            if(!this.editor.visible)
+                return;
             hoverTimeout = 2;
             if(e.clientY >= window.innerHeight - 100) {
                 this.hovering = true;

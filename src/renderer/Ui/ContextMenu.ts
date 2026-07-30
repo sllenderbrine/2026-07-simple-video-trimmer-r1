@@ -1,5 +1,5 @@
 import { ConnectionOwner } from "../../shared/EventSignals/ConnectionOwner.js";
-import { EventObject } from "../../shared/EventSignals/EventObject.js";
+import { EventObject } from "../../shared/EventSignals/ClonableEventObject.js";
 import { HtmlConnection } from "../../shared/EventSignals/HtmlConnection.js";
 import { Signal } from "../../shared/EventSignals/Signal.js";
 import { joinPaths } from "../../shared/Utility/FilePathUtility.js";

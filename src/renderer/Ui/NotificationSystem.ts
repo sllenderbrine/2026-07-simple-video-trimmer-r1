@@ -152,6 +152,8 @@ export class ActiveNotification {
                 }, 0);
                 break;
             case NotificationIconType.INFO:
+                iconContainer = this.createCustomIconContainer("info-circle-outline", Color.fromRgb(100, 100, 100), 1);
+                iconContainer.style.scale = "1";
                 break;
             case NotificationIconType.LOADING:
                 break;
