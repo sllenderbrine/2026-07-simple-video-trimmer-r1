@@ -1,10 +1,10 @@
 {
-  "name": "2026-07-video-trim-fast-r1",
+  "name": "2026-07-simple-video-trimmer-r2",
   "version": "1.1",
   "author": "Sllenderbrine",
   "description": "A simple video editor for quickly editing and renaming a large amount of clips",
   "keywords": [],
-  "license": "ISC",
+  "license": "MIT",
 
   "main": "dist/electron/main.js",
   "type": "module",
@@ -17,8 +17,8 @@
   },
 
   "build": {
-    "appId": "sllenderbrine.simplevideotrimmer.r1",
-    "productName": "SimpleVideoTrimmer",
+    "appId": "sllenderbrine.simplevideotrimmer.r2",
+    "productName": "SimpleVideoTrimmerR2",
     "directories": {
       "output": "release"
     },
