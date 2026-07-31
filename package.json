@@ -1,17 +1,23 @@
 {
   "name": "2026-07-video-trim-fast-r1",
   "version": "1.1",
+  "author": "Sllenderbrine",
   "description": "A simple video editor for quickly editing and renaming a large amount of clips",
+  "keywords": [],
+  "license": "ISC",
+
   "main": "dist/electron/main.js",
+  "type": "module",
   "scripts": {
+    "start": "npm run build && electron .",
     "build": "tsc",
     "auto-build": "tsc --watch",
-    "start": "npm run build && electron .",
     "package": "npm run build && electron-builder",
     "package-dev": "npm run build && electron-builder --dir"
   },
+
   "build": {
-    "appId": "com.sllenderbrine.simplevideotrimmer",
+    "appId": "sllenderbrine.simplevideotrimmer.r1",
     "productName": "SimpleVideoTrimmer",
     "directories": {
       "output": "release"
@@ -20,7 +26,7 @@
       "target": [
         "nsis"
       ],
-      "icon": "build/icon.ico"
+      "icon": "resources/icons/app.ico"
     },
     "files": [
       "dist/**/*",
@@ -33,10 +39,7 @@
       "createDesktopShortcut": true
     }
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "module",
+
   "devDependencies": {
     "@types/node": "^26.1.0",
     "electron-builder": "^26.15.3",
