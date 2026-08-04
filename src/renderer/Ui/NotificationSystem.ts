@@ -3,7 +3,7 @@ import { ConnectionOwner } from "../../shared/EventSignals/ConnectionOwner.js";
 import { HtmlConnection } from "../../shared/EventSignals/HtmlConnection.js";
 import { Signal } from "../../shared/EventSignals/Signal.js";
 import { joinPaths } from "../../shared/Utility/FilePathUtility.js";
-import { lerpClamped, roundDecimals } from "../../shared/Utility/MathUtility.js";
+import { clamp, lerpClamped, roundDecimals } from "../../shared/Utility/MathUtility.js";
 import { Vec2 } from "../../shared/Vectors/Vec2.js";
 import { WindowBar, WindowBarButton, WindowBarSide } from "./WindowBar.js";
 import { renderEvent } from "./WindowGlobal/WindowEvents.js";
@@ -13,6 +13,7 @@ const PATH_ICONS = joinPaths(PATH_RESOURCES, "icons");
 
 export class ActiveNotification {
     containerEl: HTMLDivElement;
+    rowEl: HTMLDivElement;
     textContentEl: HTMLDivElement;
     titleEl: HTMLDivElement;
     iconEl: HTMLDivElement;
@@ -24,6 +25,7 @@ export class ActiveNotification {
     iconType: NotificationIconType = NotificationIconType.NONE;
     timeout: number = -1;
     timeoutStart: number = -1;
+    timeoutPaused: boolean = false;
     currentPosition: Vec2 = Vec2.zero();
     targetPosition: Vec2 = Vec2.zero();
     targetOffset: Vec2 = Vec2.zero();
@@ -36,12 +38,16 @@ export class ActiveNotification {
         this.containerEl = document.createElement("div");
         this.containerEl.classList.add("ntf-container");
 
+        this.rowEl = document.createElement("div");
+        this.containerEl.appendChild(this.rowEl);
+        this.rowEl.classList.add("ntf-container-row");
+
         this.iconEl = document.createElement("div");
-        this.containerEl.appendChild(this.iconEl);
+        this.rowEl.appendChild(this.iconEl);
         this.iconEl.classList.add("ntf-icon-container");
 
         this.textContentEl = document.createElement("div");
-        this.containerEl.appendChild(this.textContentEl);
+        this.rowEl.appendChild(this.textContentEl);
         this.textContentEl.classList.add("ntf-text-content");
 
         this.titleEl = document.createElement("div");
@@ -52,14 +58,28 @@ export class ActiveNotification {
         this.textContentEl.appendChild(this.descriptionEl);
         this.descriptionEl.classList.add("ntf-description");
 
+        new HtmlConnection(this.containerEl, "mouseenter", () => {
+            this.timeoutPaused = true;
+        }, { owners: [ this.connectionOwner, ], });
+        
+        new HtmlConnection(this.containerEl, "mouseleave", () => {
+            this.timeoutPaused = false;
+        }, { owners: [ this.connectionOwner, ], });
+
         const tempVec = Vec2.zero();
         renderEvent.connect(dt => {
             this.targetPosition.add(this.targetOffset, tempVec);
             this.currentPosition.lerpClampedSelf(tempVec, dt * 20);
             this.currentOpacity = lerpClamped(this.currentOpacity, this.targetOpacity, dt * 20);
             this.updateTransform();
-            if(this.timeout >= 0 && (performance.now() - this.timeoutStart) / 1000 > this.timeout) {
-                this.remove();
+            if(this.timeoutPaused)
+                this.timeoutStart += dt * 1000;
+            if(this.timeout >= 0) {
+                let t = (performance.now() - this.timeoutStart) / 1000 / this.timeout;
+                if(t > 1) {
+                    this.remove();
+                }
+                this.setProgress(clamp(t, 0, 1));
             }
         }, { owners: [ this.connectionOwner, this.parent.connectionOwner ] });
     }
@@ -85,11 +105,20 @@ export class ActiveNotification {
     setProgress(v: number) {
         if(v == -1 && this.progressEl != null) {
             this.progressEl.remove();
+            delete this.progressEl;
+            delete this.progressValueEl;
             return;
         }
         if(this.progressEl == null) {
-            
+            this.progressEl = document.createElement("div");
+            this.containerEl.appendChild(this.progressEl);
+            this.progressEl.classList.add("ntf-progress");
+
+            this.progressValueEl = document.createElement("div");
+            this.progressEl.appendChild(this.progressValueEl);
+            this.progressValueEl.classList.add("ntf-progress-value");
         }
+        this.progressValueEl!.style.width = (v * 100) + "%";
     }
 
     setTitle(v: string) {

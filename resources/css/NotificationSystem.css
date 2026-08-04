@@ -8,11 +8,19 @@
     outline: 1px solid rgb(80, 80, 80);
     color: white;
     font-family: monospace;
-    padding: 6px 8px;
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     gap: 5px;
     box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3);
+}
+
+.ntf-container-row {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    width: stretch;
+    height: fit-content;
+    padding: 6px 8px;
 }
 
 .ntf-icon-container {
@@ -94,4 +102,18 @@
     width: 120%;
     height: 120%;
     flex: 0 0 auto;
+}
+
+.ntf-progress {
+    position: relative;
+    width: 100%;
+    height: 4px;
+    background-color: rgb(100, 100, 100);
+}
+
+.ntf-progress-value {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: rgb(196, 196, 196);
 }

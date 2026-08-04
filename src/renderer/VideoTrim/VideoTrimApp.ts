@@ -41,6 +41,12 @@ export class VideoTrimApp {
         this.startupMenu = new StartupMenu(this);
         this.contentEl.appendChild(this.startupMenu.containerEl);
 
+        const loadingNotif = this.notificationSystem.sendActiveNotification({
+            title: "Loading",
+            iconType: NotificationIconType.LOADING,
+            canClose: true,
+        });
+
         this.settings = new VideoTrimSettings(this);
         this.settings.loadEvent.connect(() => {
             this.updateLoadedState();
