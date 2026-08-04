@@ -1,5 +1,6 @@
 import { ConnectionOwner } from "../../shared/EventSignals/ConnectionOwner.js";
 import { WindowBar, WindowBarSide } from "../Ui/WindowBar.js";
+import { WindowKeypresses } from "../Ui/WindowGlobal/WindowKeypresses.js";
 import { VdvSortMethod } from "./VideoDirectoryViewer.js";
 import type { VideoTrimApp } from "./VideoTrimApp.js";
 
@@ -10,7 +11,7 @@ export class VideoTrimWindowBar extends WindowBar {
     ) {
         super();
 
-        app.keyDownEvent.connect((e) => {
+        WindowKeypresses.keyDownEvent.connect((e) => {
             const key = e.key.toLowerCase();
             if(key == "0" && e.ctrlKey) {
                 this.app.runAppAction("toggle-free-move");
@@ -179,7 +180,7 @@ export class VideoTrimWindowBar extends WindowBar {
                     },
                     {
                         title: "Loop Video",
-                        icon: this.app.trimEditor.canvas.looped ? "small-check" : undefined,
+                        icon: this.app.trimEditor.canvas.video.isLooped() ? "small-check" : undefined,
                         data: { action: "toggle-loop-editor", },
                     },
                     {

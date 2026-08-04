@@ -132,13 +132,15 @@ export class VteBottomBar {
                     const rect = this.durationSliderEl.getBoundingClientRect();
                     t = (e.clientX - rect.left) / this.durationSliderEl.clientWidth;
                 }
+                const minSeek = this.editor.canvas.video.getMinSeek();
+                const maxSeek = this.editor.canvas.video.getMaxSeek()
                 t = clamp(
                     t,
-                    this.editor.canvas.minSeek / this.editor.canvas.videoEl.duration,
-                    (this.editor.canvas.maxSeek ?? this.editor.canvas.videoEl.duration) / this.editor.canvas.videoEl.duration,
+                    (minSeek ?? 0) / this.editor.canvas.video.videoEl.duration,
+                    (maxSeek ?? this.editor.canvas.video.videoEl.duration) / this.editor.canvas.video.videoEl.duration,
                 );
                 this.durationSliderValueContentEl.style.width = `${t * 100}%`;
-                this.seekInputEvent.fire(t * this.editor.canvas.videoEl.duration);
+                this.seekInputEvent.fire(t * this.editor.canvas.video.videoEl.duration);
             }, { owners: [ this.connectionOwner, mouseDownConnections ], initArgs: offset ? undefined : [e], });
             new HtmlConnection(window, "mouseup", (e: MouseEvent) => {
                 this.seekEndEvent.fire();
@@ -150,12 +152,12 @@ export class VteBottomBar {
         }, { owners: [ this.connectionOwner, ], });
 
         this.editor.canvas.renderEvent.connect(() => {
-            if(!this.editor.canvas.videoEl.paused) {
-                let t = this.editor.canvas.videoEl.currentTime / this.editor.canvas.videoEl.duration;
+            if(!this.editor.canvas.video.videoEl.paused) {
+                let t = this.editor.canvas.video.videoEl.currentTime / this.editor.canvas.video.videoEl.duration;
                 this.durationSliderValueContentEl.style.width = `${t * 100}%`;
             }
-            this.currentTimeEl.textContent = formatVideoDuration(this.editor.canvas.videoEl.currentTime);
-            this.totalTimeEl.textContent = formatVideoDuration(this.editor.canvas.videoEl.duration);
+            this.currentTimeEl.textContent = formatVideoDuration(this.editor.canvas.video.videoEl.currentTime);
+            this.totalTimeEl.textContent = formatVideoDuration(this.editor.canvas.video.videoEl.duration);
         }, { owners: [ this.connectionOwner, ], initArgs: [], });
     }
 }

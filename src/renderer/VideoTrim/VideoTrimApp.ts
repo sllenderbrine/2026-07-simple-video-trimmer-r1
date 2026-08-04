@@ -1,7 +1,5 @@
 import { ConnectionOwner } from "../../shared/EventSignals/ConnectionOwner.js";
-import { HtmlConnection } from "../../shared/EventSignals/HtmlConnection.js";
 import { Signal } from "../../shared/EventSignals/Signal.js";
-import { Settings } from "../../shared/VideoTrim/UserSettingsUtility.js";
 import { NotificationIconType, NotificationSystem } from "../Ui/NotificationSystem.js";
 import { StartupMenu } from "./StartupMenu.js";
 import { VdvSortMethod, VideoDirectoryViewer } from "./VideoDirectoryViewer.js";
@@ -20,10 +18,6 @@ export class VideoTrimApp {
     editorOpened: boolean = false;
     loaded: boolean = false;
     settings: VideoTrimSettings;
-    keypresses: { [key: string]: boolean } = {};
-    renderEvent: Signal<[dt: number]> = new Signal();
-    keyDownEvent: Signal<[e: KeyboardEvent]> = new Signal();
-    keyUpEvent: Signal<[e: KeyboardEvent]> = new Signal();
     loadEvent: Signal<[]> = new Signal();
     connectionOwner: ConnectionOwner = new ConnectionOwner();
     constructor() {
@@ -58,28 +52,6 @@ export class VideoTrimApp {
             vte.setVisible(true);
             vte.loadVideo(vdvv);
         }, { owners: [ this.connectionOwner ] });
-
-        new HtmlConnection(window, "keydown", (e: KeyboardEvent) => {
-            const key = e.key.toLowerCase();
-            this.keypresses[key] = true;
-            this.keyDownEvent.fire(e);
-        }, { owners: [ this.connectionOwner ] });
-
-        new HtmlConnection(window, "keyup", (e: KeyboardEvent) => {
-            const key = e.key.toLowerCase();
-            delete this.keypresses[key];
-            this.keyUpEvent.fire(e);
-        }, { owners: [ this.connectionOwner ] });
-
-        let frame = performance.now();
-        const render = () => {
-            let now = performance.now();
-            let dt = (now - frame) / 1000;
-            frame = now;
-            this.renderEvent.fire(dt);
-            requestAnimationFrame(render);
-        }
-        render();
 
         this.updateLoadedState();
     }
@@ -184,12 +156,12 @@ export class VideoTrimApp {
                     this.editorOpened = false;
                     this.vdirViewer.setVisible(true);
                     this.trimEditor.setVisible(false);
-                    this.trimEditor.canvas.unloadVideo();
+                    this.trimEditor.canvas.video.unloadVideo();
                 }
                 break;
             case "toggle-loop-editor":
                 if(this.editorOpened) {
-                    this.trimEditor.canvas.looped = !this.trimEditor.canvas.looped;
+                    this.trimEditor.canvas.video.setLooped(!this.trimEditor.canvas.video.isLooped());
                 }
                 break;
             case "exit":

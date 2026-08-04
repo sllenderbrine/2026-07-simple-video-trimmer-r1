@@ -2,6 +2,7 @@ import { ConnectionOwner } from "../../shared/EventSignals/ConnectionOwner.js";
 import { HtmlConnection } from "../../shared/EventSignals/HtmlConnection.js";
 import { VideoPlayerCanvas } from "../Ui/VideoPlayerCanvas.js";
 import { renderEvent } from "../Ui/WindowGlobal/WindowEvents.js";
+import { WindowKeypresses } from "../Ui/WindowGlobal/WindowKeypresses.js";
 import { VdvVideo } from "./VideoDirectoryViewer.js";
 import type { VideoTrimApp } from "./VideoTrimApp.js";
 import { VteBottomBar } from "./VteBottomBar.js";
@@ -26,17 +27,19 @@ export class VideoTrimEditor {
         this.containerEl.classList.add("video-trim-editor-container");
 
         this.canvas = new VideoPlayerCanvas();
-        this.containerEl.appendChild(this.canvas.containerEl);
+        this.containerEl.appendChild(this.canvas.renderedCanvas.containerEl);
+        this.canvas.renderedCanvas.containerEl.classList.add("video-player-canvas-container");
+        this.canvas.renderedCanvas.canvasEl.classList.add("vpc-canvas");
         
-        this.app.keyDownEvent.connect(e => {
+        WindowKeypresses.keyDownEvent.connect(e => {
             if(!this.visible)
                 return;
             const key = e.key.toLowerCase();
             if(key == " ") {
-                if(this.canvas.userPaused) {
+                if(this.canvas.isPaused()) {
                     this.canvas.play();
                 } else {
-                    this.canvas.userPaused = true;
+                    this.canvas.pause();
                 }
             }
         }, { owners: [ this.connectionOwner ] })
@@ -61,12 +64,12 @@ export class VideoTrimEditor {
             if(!this.visible)
                 return;
             if(!this.canvas.fitToContainerLock && !this.bottomBar.hovering) {
-                let mx = (this.app.keypresses["a"] ? -1 : 0) + (this.app.keypresses["d"] ? 1 : 0);
-                let my = (this.app.keypresses["s"] ? 1 : 0) + (this.app.keypresses["w"] ? -1 : 0);
+                let mx = (WindowKeypresses.isKeyDown("a") ? -1 : 0) + (WindowKeypresses.isKeyDown("d") ? 1 : 0);
+                let my = (WindowKeypresses.isKeyDown("s") ? 1 : 0) + (WindowKeypresses.isKeyDown("w") ? -1 : 0);
                 if(mx !== 0 || my !== 0) {
                     this.canvas.shift(mx * dt * PRECISE_SHIFT_SPEED, my * dt * PRECISE_SHIFT_SPEED);
                 }
-                let dz = (this.app.keypresses["="] ? PRECISE_ZOOM_SPEED : 1) * (this.app.keypresses["-"] ? 1 / PRECISE_ZOOM_SPEED : 1);
+                let dz = (WindowKeypresses.isKeyDown("=") ? PRECISE_ZOOM_SPEED : 1) * (WindowKeypresses.isKeyDown("-") ? 1 / PRECISE_ZOOM_SPEED : 1);
                 if(dz !== 1) {
                     this.canvas.zoomInToContainerCenter(dz);
                 }
@@ -82,40 +85,43 @@ export class VideoTrimEditor {
             this.canvas.seekTo(t);
         }, { owners: [ this.connectionOwner, ], });
         this.bottomBar.seekStartEvent.connect(() => {
-            this.canvas.inputtingSeek = true;
+            this.canvas.video.setInputtingSeek(true);
         }, { owners: [ this.connectionOwner, ], });
         this.bottomBar.seekEndEvent.connect(() => {
-            if(!this.canvas.userPaused) {
-                if(this.canvas.maxSeek && seekInputT >= this.canvas.maxSeek) {
-                    if(this.canvas.looped) {
-                        this.canvas.seekTo(this.canvas.minSeek);
+            if(!this.canvas.isPausedIgnoreInput()) {
+                const maxSeek = this.canvas.video.getMaxSeek();
+                if(maxSeek != null && seekInputT >= maxSeek) {
+                    if(this.canvas.video.isLooped()) {
+                        this.canvas.seekTo(this.canvas.video.getMinSeek() ?? 0);
                     } else {
-                        this.canvas.userPaused = true;
+                        this.canvas.video._userPaused = true;
                     }
-                } else if(seekInputT >= this.canvas.videoEl.duration) {
-                    if(this.canvas.looped) {
-                        this.canvas.seekTo(this.canvas.minSeek);
+                } else if(seekInputT >= this.canvas.video.videoEl.duration) {
+                    if(this.canvas.video.isLooped()) {
+                        this.canvas.seekTo(this.canvas.video.getMinSeek() ?? 0);
                     } else {
-                        this.canvas.userPaused = true;
+                        this.canvas.video._userPaused = true;
                     }
                 }
             }
-            this.canvas.inputtingSeek = false;
+            this.canvas.video.setInputtingSeek(false);
         }, { owners: [ this.connectionOwner, ], });
     }
     
     getHasUnsavedChanges() {
-        if(!this.canvas.videoLoaded)
+        if(!this.canvas.video.isLoaded())
             return false;
-        if(this.canvas.minSeek != 0)
+        const minSeek = this.canvas.video.getMinSeek();
+        if(minSeek != null && minSeek != 0)
             return true;
-        if(this.canvas.maxSeek != null && this.canvas.maxSeek != this.canvas.videoEl.duration)
+        const maxSeek = this.canvas.video.getMaxSeek();
+        if(maxSeek != null && maxSeek != this.canvas.video.videoEl.duration)
             return true;
         return false;
     }
 
     loadVideo(vdvv: VdvVideo) {
-        this.canvas.userPaused = false;
+        this.canvas.video._userPaused = false;
         this.undoActions = [];
         this.redoActions = [];
         this.canvas.setUrl(vdvv.path);
