@@ -2,7 +2,7 @@ export class Vec3 {
     constructor(public x: number, public y: number, public z: number) {
 
     }
-    // Constructors
+    //// Constructors ////
     static zero(out?: Vec3): Vec3 {
         if(out === undefined)
             return new Vec3(0, 0, 0);
@@ -39,7 +39,7 @@ export class Vec3 {
         const a = Vec3.fromRandomUnit();
         return Vec3.fromComponents(Vec3.getPitch(a), Vec3.getYaw(a), Math.random() * 2 * Math.PI, out);
     }
-    // Constants
+    //// Constants ////
     static ZERO = Object.freeze(Vec3.fromScalar(0));
     static ONE = Object.freeze(Vec3.fromScalar(1));
     static X_AXIS = Object.freeze(Vec3.fromComponents(1, 0, 0));
@@ -54,7 +54,7 @@ export class Vec3 {
     static BACK = Object.freeze(Vec3.negate(Vec3.FORWARD));
     static DOWN = Object.freeze(Vec3.negate(Vec3.UP));
     static LEFT = Object.freeze(Vec3.negate(Vec3.RIGHT));
-    // Conversions
+    //// Conversions ////
     static clone(a: Vec3): Vec3 {
         return Vec3.copy(a);
     }
@@ -64,7 +64,10 @@ export class Vec3 {
     static toString(a: Vec3): string {
         return `<${a.x}, ${a.y}, ${a.z}>`;
     }
-    // Calculations
+    static toKeyString(a: Vec3): string {
+        return a.x + " " + a.y + " " + a.z;
+    }
+    //// Calculations ////
     static getLengthSq(a: Vec3): number {
         return a.x * a.x + a.y * a.y + a.z * a.z;
     }
@@ -135,7 +138,7 @@ export class Vec3 {
     static strictEquals(a: Vec3, b: Vec3): boolean {
         return a.x === b.x && a.y === b.y && a.z === b.z;
     }
-    // Operations
+    //// Operations ////
     static add(a: Vec3, b: Vec3, out: Vec3 = Vec3.zero()): Vec3 {
         out.x = a.x + b.x;
         out.y = a.y + b.y;
@@ -384,7 +387,7 @@ export class Vec3 {
     static rotateZyx(a: Vec3, rx: number, ry: number, rz: number, out: Vec3 = Vec3.zero()): Vec3 {
         return Vec3.rotateX(Vec3.rotateY(Vec3.rotateZ(a, rz, out), ry, out), rx, out);
     }
-    // Non-static constructors
+    //// Non-static constructors ////
     zero() {
         return Vec3.zero(this);
     }
@@ -406,7 +409,7 @@ export class Vec3 {
     fromRandomUnitRotation() {
         return Vec3.fromRandomUnitRotation(this);
     }
-    // Non-static conversions
+    //// Non-static conversions ////
     clone(out?: Vec3) {
         return Vec3.copy(this, out);
     }
@@ -416,7 +419,10 @@ export class Vec3 {
     toString() {
         return Vec3.toString(this);
     }
-    // Non-static calculations
+    toKeyString() {
+        return Vec3.toKeyString(this);
+    }
+    //// Non-static calculations ////
     lengthSq() {
         return Vec3.getLengthSq(this);
     }
@@ -468,7 +474,7 @@ export class Vec3 {
     strictEquals(other: Vec3) {
         return Vec3.strictEquals(this, other);
     }
-    // Non-static operations
+    //// Non-static operations ////
     add(other: Vec3, out?: Vec3) {
         return Vec3.add(this, other, out);
     }
@@ -583,7 +589,7 @@ export class Vec3 {
     rotateZyx(rx: number, ry: number, rz: number, out?: Vec3) {
         return Vec3.rotateZyx(this, rx, ry, rz, out);
     }
-    // Non-static self-operations
+    //// Non-static self-operations ////
     addSelf(other: Vec3) {
         return Vec3.add(this, other, this);
     }

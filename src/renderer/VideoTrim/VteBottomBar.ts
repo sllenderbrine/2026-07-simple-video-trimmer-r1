@@ -1,10 +1,10 @@
 import { Connection } from "../../shared/EventSignals/Connection.js";
 import { ConnectionOwner } from "../../shared/EventSignals/ConnectionOwner.js";
-import { renderEvent } from "../../shared/EventSignals/events/RenderEvent.js";
 import { HtmlConnection } from "../../shared/EventSignals/HtmlConnection.js";
 import { Signal } from "../../shared/EventSignals/Signal.js";
 import { clamp } from "../../shared/Utility/MathUtility.js";
 import { formatVideoDuration } from "../../shared/Utility/StringUtility.js";
+import { renderEvent } from "../Ui/WindowGlobal/WindowEvents.js";
 import type { VideoTrimEditor } from "./VideoTrimEditor.js";
 
 export class VteBottomBar {
@@ -77,7 +77,7 @@ export class VteBottomBar {
         this.containerEl.appendChild(this.toolsCenterEl);
         this.toolsCenterEl.classList.add("vtebb-tools-center");
 
-        let animConnection: _Connection<any> | null = null;
+        let animConnection: Connection<any> | null = null;
         let hoverTimeout = 0;
         new HtmlConnection(window, "mousemove", (e: MouseEvent) => {
             if(!this.editor.visible)

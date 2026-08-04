@@ -1,17 +1,16 @@
-import { clamp, pmod } from "../Utility/MathUtility.js";
+import { clamp, pmod, lerp } from "../Utility/MathUtility.js";
 
 export class Color {
     // 0 - 255
     private _r: number = 0;
     private _g: number = 0;
     private _b: number = 0;
+    private _a: number = 0;
     // 0 - 360
     private _h: number = 0;
     // 0 - 100
     private _s: number = 0;
     private _v: number = 0;
-    // 0 - 100
-    a: number = 0;
     
     private _rgbValid: boolean = true;
     private _hsvValid: boolean = false;
@@ -30,6 +29,9 @@ export class Color {
         if(!this._rgbValid) this._calculateRgb();
         return this._b;
     }
+    get a() {
+        return this._a;
+    }
 
     get h() {
         if(!this._hsvValid) this._calculateHsv();
@@ -47,17 +49,20 @@ export class Color {
     set r(v: number) {
         if(!this._rgbValid) this._calculateRgb();
         this._hsvValid = false;
-        this._r = clamp(v, 0, 255);
+        this._r = clamp(Math.round(v), 0, 255);
     }
     set g(v: number) {
         if(!this._rgbValid) this._calculateRgb();
         this._hsvValid = false;
-        this._g = clamp(v, 0, 255);
+        this._g = clamp(Math.round(v), 0, 255);
     }
     set b(v: number) {
         if(!this._rgbValid) this._calculateRgb();
         this._hsvValid = false;
-        this._b = clamp(v, 0, 255);
+        this._b = clamp(Math.round(v), 0, 255);
+    }
+    set a(v: number) {
+        this._a = clamp(Math.round(v), 0, 255);
     }
 
     set h(v: number) {
@@ -114,11 +119,11 @@ export class Color {
         this._v = max / 255 * 100;
     }
 
-    toCss() {
-        return "rgba(" + this.r + ", " + this.g + ", " + this.b + ", " + this.a / 100 + ")";
+    static toCss(color: Color): string {
+        return "rgba(" + color.r + ", " + color.g + ", " + color.b + ", " + color.a / 255 + ")";
     }
 
-    static fromRgb(r: number, g: number, b: number, a: number = 100) {
+    static fromRgb(r: number, g: number, b: number, a: number = 255) {
         const color = new Color();
         color.r = r;
         color.g = g;
@@ -127,7 +132,7 @@ export class Color {
         return color;
     }
 
-    static fromHsv(h: number, s: number, v: number, a: number = 100) {
+    static fromHsv(h: number, s: number, v: number, a: number = 255) {
         const color = new Color();
         color.h = h;
         color.s = s;
@@ -137,16 +142,53 @@ export class Color {
     }
 
     static copy(other: Color, out: Color = new Color()) {
-        out.r = other.r;
-        out.g = other.g;
-        out.b = other.b;
-        out.a = other.a;
+        out._r = other.r;
+        out._g = other.g;
+        out._b = other.b;
+        out._a = other.a;
+        out._hsvValid = false;
+        out._rgbValid = true;
         return out;
+    }
+
+    static lerp(a: Color, b: Color, t: number) {
+        return Color.fromRgb(
+            lerp(a.r, b.r, t),
+            lerp(a.g, b.g, t),
+            lerp(a.b, b.b, t),
+            lerp(a.a, b.a, t),
+        );
+    }
+
+    static blendColors(bottom: Color, top: Color): Color {
+        const alphaTop = top.a / 255;
+        const alphaBottom = bottom.a / 255;
+        const remainder = (1 - alphaTop);
+        const alphaResult = (alphaTop + alphaBottom * remainder);
+
+        if(alphaResult == 0)
+            return Color.fromRgb(0, 0, 0, 0);
+
+        return Color.fromRgb(
+            (top.r * alphaTop + bottom.r * alphaBottom * remainder) / alphaResult,
+            (top.g * alphaTop + bottom.g * alphaBottom * remainder) / alphaResult,
+            (top.b * alphaTop + bottom.b * alphaBottom * remainder) / alphaResult,
+            alphaResult * 255
+        );
     }
 
     clone() {
         return Color.copy(this);
     }
+
+    toCss() {
+        return Color.toCss(this);
+    }
+
+    lerp(other: Color, t: number) {
+        return Color.lerp(this, other, t);
+    }
+    
 
     static WHITE = Color.fromRgb(255, 255, 255);
     static LIGHT_GRAY = Color.fromRgb(200, 200, 200);

@@ -1,7 +1,7 @@
 import { ConnectionOwner } from "../../shared/EventSignals/ConnectionOwner.js";
-import { renderEvent } from "../../shared/EventSignals/events/RenderEvent.js";
 import { HtmlConnection } from "../../shared/EventSignals/HtmlConnection.js";
 import { VideoPlayerCanvas } from "../Ui/VideoPlayerCanvas.js";
+import { renderEvent } from "../Ui/WindowGlobal/WindowEvents.js";
 import { VdvVideo } from "./VideoDirectoryViewer.js";
 import type { VideoTrimApp } from "./VideoTrimApp.js";
 import { VteBottomBar } from "./VteBottomBar.js";

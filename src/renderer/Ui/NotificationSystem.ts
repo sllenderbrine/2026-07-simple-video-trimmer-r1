@@ -1,12 +1,12 @@
 import { Color } from "../../shared/Color/Color.js";
 import { ConnectionOwner } from "../../shared/EventSignals/ConnectionOwner.js";
-import { renderEvent } from "../../shared/EventSignals/events/RenderEvent.js";
 import { HtmlConnection } from "../../shared/EventSignals/HtmlConnection.js";
 import { Signal } from "../../shared/EventSignals/Signal.js";
 import { joinPaths } from "../../shared/Utility/FilePathUtility.js";
 import { lerpClamped, roundDecimals } from "../../shared/Utility/MathUtility.js";
 import { Vec2 } from "../../shared/Vectors/Vec2.js";
 import { WindowBar, WindowBarButton, WindowBarSide } from "./WindowBar.js";
+import { renderEvent } from "./WindowGlobal/WindowEvents.js";
 
 const PATH_RESOURCES = "..";
 const PATH_ICONS = joinPaths(PATH_RESOURCES, "icons");

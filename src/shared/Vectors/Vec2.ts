@@ -2,7 +2,7 @@ export class Vec2 {
     constructor(public x: number, public y: number) {
  
     }
-    // Constructors
+    //// Constructors ////
     static zero(out?: Vec2): Vec2 {
         if(out === undefined)
             return new Vec2(0, 0);
@@ -30,7 +30,7 @@ export class Vec2 {
         const a = Math.random() * 2 * Math.PI;
         return Vec2.fromComponents(Math.cos(a), Math.sin(a), out);
     }
-    // Constants
+    //// Constants ////
     static ZERO = Object.freeze(Vec2.fromScalar(0));
     static ONE = Object.freeze(Vec2.fromScalar(1));
     static X_AXIS = Object.freeze(Vec2.fromComponents(1, 0));
@@ -41,7 +41,7 @@ export class Vec2 {
     static RIGHT = Object.freeze(Vec2.fromComponents(1, 0));
     static DOWN = Object.freeze(Vec2.negate(Vec2.UP));
     static LEFT = Object.freeze(Vec2.negate(Vec2.RIGHT));
-    // Conversions
+    //// Conversions ////
     static clone(a: Vec2): Vec2 {
         return Vec2.copy(a);
     }
@@ -51,7 +51,10 @@ export class Vec2 {
     static toString(a: Vec2): string {
         return `<${a.x}, ${a.y}>`;
     }
-    // Calculations
+    static toKeyString(a: Vec2): string {
+        return a.x + " " + a.y;
+    }
+    //// Calculations ////
     static getLengthSq(a: Vec2): number {
         return a.x * a.x + a.y * a.y;
     }
@@ -94,7 +97,7 @@ export class Vec2 {
     static strictEquals(a: Vec2, b: Vec2): boolean {
         return a.x === b.x && a.y === b.y;
     }
-    // Operations
+    //// Operations ////
     static add(a: Vec2, b: Vec2, out: Vec2 = Vec2.zero()): Vec2 {
         out.x = a.x + b.x;
         out.y = a.y + b.y;
@@ -237,7 +240,7 @@ export class Vec2 {
             out
         );
     }
-    // Non-static constructors
+    //// Non-static constructors ////
     zero() {
         return Vec2.zero(this);
     }
@@ -256,7 +259,7 @@ export class Vec2 {
     fromRandomUnit() {
         return Vec2.fromRandomUnit(this);
     }
-    // Non-static conversions
+    //// Non-static conversions ////
     clone(out?: Vec2) {
         return Vec2.copy(this, out);
     }
@@ -266,7 +269,10 @@ export class Vec2 {
     toString() {
         return Vec2.toString(this);
     }
-    // Non-static calculations
+    toKeyString() {
+        return Vec2.toKeyString(this);
+    }
+    //// Non-static calculations ////
     lengthSq() {
         return Vec2.getLengthSq(this);
     }
@@ -303,7 +309,7 @@ export class Vec2 {
     strictEquals(other: Vec2) {
         return Vec2.strictEquals(this, other);
     }
-    // Non-static operations
+    //// Non-static operations ////
     add(other: Vec2, out?: Vec2) {
         return Vec2.add(this, other, out);
     }
@@ -388,7 +394,7 @@ export class Vec2 {
     rotate(t: number, out?: Vec2) {
         return Vec2.rotate(this, t, out);
     }
-    // Non-static self-operations
+    //// Non-static self-operations ////
     addSelf(other: Vec2) {
         return Vec2.add(this, other, this);
     }

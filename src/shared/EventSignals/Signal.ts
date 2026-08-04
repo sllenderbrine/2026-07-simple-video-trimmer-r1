@@ -2,6 +2,7 @@ import { Connection, ConnectionOptions } from "./Connection.js";
 
 export class Signal<T extends any[]> {
     connections: Connection<T>[] = [];
+    onDisconnect?: (conn: Connection<T>) => void;
     constructor() {
 
     }
@@ -14,6 +15,12 @@ export class Signal<T extends any[]> {
     fire(...args: T) {
         for(const conn of [...this.connections]) {
             conn.callback(...args);
+        }
+    }
+
+    disconnectAll() {
+        for(const conn of [...this.connections]) {
+            conn.disconnect();
         }
     }
 }

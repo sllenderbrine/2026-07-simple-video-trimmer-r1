@@ -1,5 +1,4 @@
 import { ConnectionOwner } from "../../shared/EventSignals/ConnectionOwner.js";
-import { EventObject } from "../../shared/EventSignals/ClonableEventObject.js";
 import { Signal } from "../../shared/EventSignals/Signal.js";
 import { joinPaths } from "../../shared/Utility/FilePathUtility.js";
 import { ContextMenu } from "./ContextMenu.js";
@@ -9,17 +8,19 @@ import { ContextMenuButton } from "./ContextMenu.js";
 const PATH_RESOURCES = "..";
 const PATH_ICONS = joinPaths(PATH_RESOURCES, "icons");
 
-export class WindowBarMenuClickEvent extends EventObject {
+export class WindowBarMenuClickEvent {
     contextMenu?: ContextMenu;
     contextMenuButton?: ContextMenuButton;
     windowBarButton?: WindowBarButton;
     index: number = 0;
     constructor() {
-        super();
+        
     }
+
     clone() {
         return new WindowBarMenuClickEvent().copy(this) as this;
     }
+    
     copy(other: WindowBarMenuClickEvent) {
         this.contextMenu = other.contextMenu;
         this.contextMenuButton = other.contextMenuButton;

@@ -1,24 +1,24 @@
-import type { ConnectionOwner } from "./ConnectionOwner.js";
-import type { Signal } from "./Signal.js";
+import { ConnectionOwner } from "./ConnectionOwner.js";
+import { EventSystem } from "./EventSystem.js";
 
-export type ConnectionOptions<T extends any[]> = {
+export type EventSysConnectionOptions<T extends any[]> = {
     owners?: ConnectionOwner[] | null;
     initArgs?: T,
     once?: boolean,
 }
 
-export class Connection<T extends any[]> {
+export class EventSysConnection<T extends any[]> {
     owners: ConnectionOwner[] = [];
     disconnected = false;
     constructor(
-        public signal: Signal<T>,
+        public sys: EventSystem<T>,
+        public evName: string,
         public callback: ((...args: T) => void),
-        options: ConnectionOptions<T>,
+        options: EventSysConnectionOptions<T>,
     ) {
-        signal.connections.push(this);
         if(options.owners != null) {
             for(const owner of options.owners) {
-                owner.connections.push(this);
+                owner.eventSysConnections.push(this);
                 this.owners.push(owner);
             }
         }
@@ -38,22 +38,33 @@ export class Connection<T extends any[]> {
         if(options.initArgs != null) {
             this.callback(...options.initArgs);
         }
+        
+        let event: EventSysConnection<T>[] | undefined = sys.events[evName];
+        if(event == null) {
+            event = [];
+            sys.events[evName] = event;
+        }
+        event.push(this);
     }
 
     disconnect() {
         if(this.disconnected)
             return;
         this.disconnected = true;
-        const signalIndex = this.signal.connections.indexOf(this);
-        if(signalIndex != -1) {
-            this.signal.connections.splice(signalIndex, 1);
-            if(this.signal.onDisconnect)
-                this.signal.onDisconnect(this);
+        let event = this.sys.events[this.evName];
+        if(event != null) {
+            const eventIndex = event.indexOf(this);
+            if(eventIndex != -1) {
+                event.splice(eventIndex, 1);
+                if(event.length == 0) {
+                    delete this.sys.events[this.evName];
+                }
+            }
         }
         for(const owner of [...this.owners]) {
-            const ownerIndex = owner.connections.indexOf(this);
+            const ownerIndex = owner.eventSysConnections.indexOf(this);
             if(ownerIndex != -1) {
-                owner.connections.splice(ownerIndex, 1);
+                owner.eventSysConnections.splice(ownerIndex, 1);
             }
         }
         this.owners = [];

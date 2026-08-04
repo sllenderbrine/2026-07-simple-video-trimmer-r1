@@ -1,5 +1,4 @@
 import { ConnectionOwner } from "../../shared/EventSignals/ConnectionOwner.js";
-import { EventObject } from "../../shared/EventSignals/ClonableEventObject.js";
 import { HtmlConnection } from "../../shared/EventSignals/HtmlConnection.js";
 import { Signal } from "../../shared/EventSignals/Signal.js";
 import { joinPaths } from "../../shared/Utility/FilePathUtility.js";
@@ -22,33 +21,37 @@ export type ContextMenuLayout = {
     dangerSeparator?: boolean,
 };
 
-export class ContextMenuButtonClickEvent extends EventObject {
+export class ContextMenuButtonClickEvent {
     contextMenu?: ContextMenu;
     contextMenuButton?: ContextMenuButton;
     index: number = 0;
     constructor() {
-        super();
+        
     }
+
     clone() {
         return new ContextMenuButtonClickEvent().copy(this) as this;
     }
+
     copy(other: ContextMenuButtonClickEvent) {
         this.contextMenu = other.contextMenu;
         this.contextMenuButton = other.contextMenuButton;
         this.index = other.index;
         return this;
-    }
+    } 
 }
 
-export class ContextMenuClickOffEvent extends EventObject {
+export class ContextMenuClickOffEvent {
     contextMenu?: ContextMenu;
     target?: EventTarget;
     constructor() {
-        super();
+        
     }
+
     clone() {
         return new ContextMenuClickOffEvent().copy(this) as this;
     }
+    
     copy(other: ContextMenuClickOffEvent) {
         this.contextMenu = other.contextMenu;
         this.target = other.target;

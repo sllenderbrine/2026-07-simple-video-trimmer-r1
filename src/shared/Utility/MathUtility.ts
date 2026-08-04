@@ -1,3 +1,5 @@
+export const EPSILON = 1e-7;
+
 export function degreesToRadians(x: number) {
     return x * Math.PI / 180;
 }
@@ -21,4 +23,12 @@ export function pmod(x: number, n: number) {
 export function roundDecimals(x: number, decimals: number) {
     const p10 = Math.pow(10, decimals);
     return Math.round(x * p10) / p10;
+}
+
+export function isClose(a: number, b: number, e: number = EPSILON) {
+    return Math.abs(a - b) <= e;
+}
+
+export function isZero(a: number, e: number = EPSILON) {
+    return Math.abs(a) <= e
 }
