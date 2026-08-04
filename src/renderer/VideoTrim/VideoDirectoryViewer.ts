@@ -5,6 +5,7 @@ import { shuffleInPlace } from "../../shared/Utility/ArrayUtility.js";
 import { pmod } from "../../shared/Utility/MathUtility.js";
 import { delay } from "../../shared/Utility/PromiseUtility.js";
 import { formatVideoDuration } from "../../shared/Utility/StringUtility.js";
+import { maintainAspectCropCover, maintainAspectFitCover } from "../../shared/Utility/UiUtility.js";
 import { loadVideo, loadVideoMetadata, seekVideo, unloadVideo } from "../../shared/Utility/VideoUtility.js";
 import { CustomScrollbar } from "../Ui/CustomScrollbar.js";
 import { NotificationIconType, NotificationSystem } from "../Ui/NotificationSystem.js";
@@ -85,8 +86,10 @@ async function startMetadataLoader(vdv: VideoDirectoryViewer) {
 async function startThumbnailLoader(vdv: VideoDirectoryViewer) {
     const video = document.createElement("video");
     const canvas = document.createElement("canvas");
-    canvas.width = 140;
+    canvas.width = 220;
     canvas.height = 100;
+    // canvas.width = 280;
+    // canvas.height = 200;
     const ctx = canvas.getContext("2d");
     if(ctx == null) {
         const notif = vdv.app.notificationSystem.sendActiveNotification({
@@ -136,16 +139,13 @@ async function startThumbnailLoader(vdv: VideoDirectoryViewer) {
         img.classList.add("vdv-video-thumbnail");
         fileView.thumbnailEl = img;
         img.style.display = "none";
+        img.style.width = "calc(100% - 20px)";
+        img.style.height = "calc(100% - 20px)";
+        img.style.objectFit = "cover";
+        // img.style.width = "140px";
+        // img.style.height = "100px";
 
-        let sourceWidth = 0;
-        let sourceHeight = 0;
-        if(video.videoWidth / video.videoHeight > canvas.width / canvas.height) {
-            sourceHeight = video.videoHeight;
-            sourceWidth = sourceHeight * canvas.width / canvas.height;
-        } else {
-            sourceWidth = video.videoWidth;
-            sourceHeight = sourceWidth * canvas.height / canvas.width;
-        }
+        let [ sourceWidth, sourceHeight ] = maintainAspectCropCover(video.videoWidth, video.videoHeight, canvas.width / canvas.height);
         ctx.drawImage(
             video,
             Math.floor((video.videoWidth - sourceWidth) / 2),
