@@ -90,7 +90,6 @@ export class VideoTrimWindowBar extends WindowBar {
                                 rightAligned: true,
                             };
                         }) : [ ],
-                        data: { action: "coming-soon", },
                     },
                     {
                         title: "Close Folder",

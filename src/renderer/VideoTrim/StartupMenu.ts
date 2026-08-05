@@ -31,6 +31,7 @@ export class StartupMenu {
         testCanvas.style.width = "100%";
         testCanvas.style.height = "100%";
         testCanvas.style.objectFit = "fill";
+        testCanvas.style.imageRendering = "pixelated";
         testCanvas.style.left = "0px";
         testCanvas.style.top = "0px";
         testCanvas.style.zIndex = "1";

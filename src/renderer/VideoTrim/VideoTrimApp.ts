@@ -43,16 +43,19 @@ export class VideoTrimApp {
 
         const loadingNotif = this.notificationSystem.sendActiveNotification({
             title: "Loading",
+            description: "Loading your settings...",
             iconType: NotificationIconType.LOADING,
             canClose: true,
+            descriptionWordBreak: true,
         });
 
         this.settings = new VideoTrimSettings(this);
         this.settings.loaded.handle(v => {
             this.updateLoadedState();
             loadingNotif.setIconType(NotificationIconType.CHECK);
-            loadingNotif.setTitle("Loading Completed");
-            loadingNotif.setTimeout(2);
+            loadingNotif.setTitle("Settings Loaded");
+            loadingNotif.setDescription("");
+            loadingNotif.setTimeout(3);
         }, { owners: [ this.connectionOwner, ], });
 
         vdv.videoOpenEvent.connect(vdvv => {

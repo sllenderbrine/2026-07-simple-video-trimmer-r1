@@ -8,6 +8,7 @@
     gap: 35%;
     color: rgb(200, 200, 200);
     font-family: "Recursive";
+    text-shadow: 0px 0px 25px black, 0px 0px 15px black;
 }
 
 .startup-content-column {
