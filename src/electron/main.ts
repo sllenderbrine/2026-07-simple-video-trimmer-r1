@@ -1,9 +1,10 @@
-import { app, BrowserWindow, ipcMain, Menu, dialog, shell } from "electron";
+import { app, BrowserWindow, ipcMain, Menu, dialog, shell, clipboard, nativeImage } from "electron";
 import { fileURLToPath } from "url";
 import fs from "fs/promises";
 import path from "path";
 import { editAndApply, getVideosInFolder } from "./ElectronUtility.js";
 import { loadSettings, saveSettings } from "./UserSettings.js";
+import { ErrorMessageResult } from "../shared/Utility/PromiseUtility.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -133,6 +134,56 @@ ipcMain.handle("load-settings", async () => {
 ipcMain.handle("save-settings", async (_, settings) => {
     return await saveSettings(settings);
 });
+
+// Screenshot API
+async function saveAndCopyScreenshot(pngDataUrl: string): Promise<ErrorMessageResult<{
+    path: string;
+}>> {
+    if(!pngDataUrl.startsWith("data:image/png;base64,"))
+        return {
+            success: false,
+            error: { message: "Invalid screenshot data", },
+        };
+
+    const image = nativeImage.createFromDataURL(pngDataUrl);
+
+    if(image.isEmpty())
+        return {
+            success: false,
+            error: { message: "Failed to decode screenshot", },
+        };
+
+    const screenshotsDirectory = path.join(
+        app.getPath("pictures"),
+        "Screenshots",
+    );
+
+    await fs.mkdir(screenshotsDirectory, { recursive: true });
+
+    const timestamp = new Date()
+        .toISOString()
+        .replace(/[:.]/g, "-");
+
+    const filePath = path.join(
+        screenshotsDirectory,
+        `simple-video-trimmer-${timestamp}.png`,
+    );
+
+    await fs.writeFile(filePath, image.toPNG());
+
+    clipboard.writeImage(image);
+
+    return {
+        success: true,
+        value: { path: filePath, },
+    };
+}
+ipcMain.handle(
+    "save-and-copy-screenshot",
+    async (_, pngDataUrl: string) => {
+        return saveAndCopyScreenshot(pngDataUrl);
+    },
+);
 
 // initialize
 init();

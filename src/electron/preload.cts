@@ -43,3 +43,8 @@ contextBridge.exposeInMainWorld("settingsApi", {
     load: () => ipcRenderer.invoke("load-settings"),
     save: (settings: unknown) => ipcRenderer.invoke("save-settings", settings),
 });
+
+contextBridge.exposeInMainWorld("screenshotApi", {
+    saveAndCopy: (pngDataUrl: string) =>
+        ipcRenderer.invoke("save-and-copy-screenshot", pngDataUrl),
+});

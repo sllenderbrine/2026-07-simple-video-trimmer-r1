@@ -1,6 +1,5 @@
 import { ConnectionOwner } from "../../shared/EventSignals/ConnectionOwner.js";
 import { ObservedValue } from "../../shared/EventSignals/ObservedValue.js";
-import { Signal } from "../../shared/EventSignals/Signal.js";
 import { addRecentFolder } from "../../shared/VideoTrim/UserSettingsUtility.js";
 import { NotificationIconType, NotificationSystem } from "../Ui/NotificationSystem.js";
 import { StartupMenu } from "./StartupMenu.js";
@@ -187,6 +186,42 @@ export class VideoTrimApp {
                 if(this.editorOpened) {
                     this.trimEditor.bottomBar.setPinned(!this.trimEditor.bottomBar.isPinned());
                 }
+                break;
+            case "editor-snapshot":
+                if(!this.editorOpened)
+                    break;
+                if(!this.trimEditor.canvas.video.isLoaded())
+                    break;
+
+                const textureCanvas = this.trimEditor.canvas.textureCanvasEl;
+                if(textureCanvas.width <= 1 || textureCanvas.height <= 1)
+                    break;
+                const pngDataUrl = textureCanvas.toDataURL("image/png");
+                window.screenshotApi.saveAndCopy(pngDataUrl).then(result => {
+                    if(result.success) {
+                        console.log("Screenshot saved to:", result.value.path);
+                        this.notificationSystem.sendActiveNotification({
+                            title: "Screenshot Saved",
+                            description: "Screenshot saved to:" + result.value.path,
+                            iconType: NotificationIconType.CHECK,
+                            timeout: 5,
+                            viewDetails: true,
+                            canClose: true,
+                        });
+                    } else {
+                        console.error("Failed to save screenshot: " + result.error.message);
+                        const notif = this.notificationSystem.sendActiveNotification({
+                            title: "Error",
+                            description: "",
+                            iconType: NotificationIconType.ERROR,
+                            timeout: 5,
+                            viewDetails: true,
+                            canClose: true,
+                        });
+                        notif.descriptionEl.innerHTML = "<span>Failed to save screenshot</span>" + notif.descriptionEl.innerHTML;
+                        notif.descriptionEl.querySelector("span")!.style.wordBreak = "break-word";
+                    }
+                });
                 break;
             case "exit":
                 window.windowApi.close();

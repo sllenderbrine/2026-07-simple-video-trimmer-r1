@@ -1,4 +1,7 @@
+import { joinPaths } from "../../shared/Utility/FilePathUtility.js";
 import type { VideoTrimApp } from "./VideoTrimApp.js";
+
+const PATH_RESOURCES = "..";
 
 export class StartupMenu {
     containerEl: HTMLDivElement;
@@ -10,6 +13,28 @@ export class StartupMenu {
     ) {
         this.containerEl = document.createElement("div");
         this.containerEl.classList.add("startup-container");
+        
+        let testCanvas = document.createElement("img");
+        this.containerEl.appendChild(testCanvas);
+        testCanvas.style.position = "absolute";
+        testCanvas.style.width = "100%";
+        testCanvas.style.height = "100%";
+        testCanvas.style.objectFit = "cover";
+        testCanvas.style.left = "0px";
+        testCanvas.style.top = "0px";
+        testCanvas.style.zIndex = "-1";
+        testCanvas.src = joinPaths(PATH_RESOURCES, "textures/startbg.png");
+        
+        testCanvas = document.createElement("img");
+        this.containerEl.appendChild(testCanvas);
+        testCanvas.style.position = "absolute";
+        testCanvas.style.width = "100%";
+        testCanvas.style.height = "100%";
+        testCanvas.style.objectFit = "fill";
+        testCanvas.style.left = "0px";
+        testCanvas.style.top = "0px";
+        testCanvas.style.zIndex = "1";
+        testCanvas.src = joinPaths(PATH_RESOURCES, "textures/startoverlay.png");
 
         this.columnEl0 = document.createElement("div");
         this.containerEl.appendChild(this.columnEl0)

@@ -43,5 +43,10 @@ declare global {
             load: () => Promise<ErrorMessageResult<Settings>>;
             save: (settings: Settings) => Promise<ErrorMessageResult<undefined>>;
         };
+        screenshotApi: {
+            saveAndCopy: (pngDataUrl: string) => Promise<ErrorMessageResult<{
+                path: string;
+            }>>;
+        };
     }
 }
