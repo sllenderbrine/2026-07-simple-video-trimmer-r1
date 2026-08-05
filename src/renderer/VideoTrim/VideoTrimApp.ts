@@ -1,5 +1,7 @@
 import { ConnectionOwner } from "../../shared/EventSignals/ConnectionOwner.js";
+import { ObservedValue } from "../../shared/EventSignals/ObservedValue.js";
 import { Signal } from "../../shared/EventSignals/Signal.js";
+import { addRecentFolder } from "../../shared/VideoTrim/UserSettingsUtility.js";
 import { NotificationIconType, NotificationSystem } from "../Ui/NotificationSystem.js";
 import { StartupMenu } from "./StartupMenu.js";
 import { VdvSortMethod, VideoDirectoryViewer } from "./VideoDirectoryViewer.js";
@@ -16,9 +18,8 @@ export class VideoTrimApp {
     windowBar: VideoTrimWindowBar;
     notificationSystem: NotificationSystem;
     editorOpened: boolean = false;
-    loaded: boolean = false;
+    loaded = new ObservedValue(false);
     settings: VideoTrimSettings;
-    loadEvent: Signal<[]> = new Signal();
     connectionOwner: ConnectionOwner = new ConnectionOwner();
     constructor() {
         this.contentEl = document.createElement("div");
@@ -48,61 +49,73 @@ export class VideoTrimApp {
         });
 
         this.settings = new VideoTrimSettings(this);
-        this.settings.loadEvent.connect(() => {
+        this.settings.loaded.handle(v => {
             this.updateLoadedState();
-        }, { owners: [ this.connectionOwner ] })
+            loadingNotif.setIconType(NotificationIconType.CHECK);
+            loadingNotif.setTitle("Loading Completed");
+            loadingNotif.setTimeout(2);
+        }, { owners: [ this.connectionOwner, ], });
 
         vdv.videoOpenEvent.connect(vdvv => {
             this.editorOpened = true;
             vdv.setVisible(false);
             vte.setVisible(true);
             vte.loadVideo(vdvv);
-        }, { owners: [ this.connectionOwner ] });
+        }, { owners: [ this.connectionOwner, ], });
 
         this.updateLoadedState();
     }
 
     updateLoadedState() {
-        if(this.loaded)
+        if(this.loaded.get())
             return;
-        if(this.settings.loaded) {
+        if(this.settings.loaded.get()) {
             document.body.appendChild(this.contentEl);
-
-            this.loaded = true;
-            this.loadEvent.fire();
+            this.loaded.set(true);
         }
     }
 
     async promptOpenDirectory() {
         const dir = await window.fileApi.promptChooseDirectory();
         if(dir != null) {
-            let res = await window.fileApi.getDirectoryFileList(dir);
-            if(res.success) {
-                this.vdirViewer.loadVideos(dir, res.value);
-                this.startupMenu.containerEl.style.display = "none";
-                return dir;
-            } else {
-                const notif = this.notificationSystem.sendActiveNotification({
-                    title: "Error",
-                    iconType: NotificationIconType.ERROR,
-                    description: "Failed to get directory",
-                });
-                notif.addViewDetailsLink();
-            }
-        } else {
-
+            return this.openVideoDirectory(dir);
         }
         return null;
     }
 
-    runAppAction(action: string) {
+    async openVideoDirectory(path: string) {
+        let res = await window.fileApi.getDirectoryFileList(path);
+        if(res.success) {
+            this.vdirViewer.loadVideos(path, res.value);
+            this.startupMenu.containerEl.style.display = "none";
+            return path;
+        } else {
+            const notif = this.notificationSystem.sendActiveNotification({
+                title: "Error",
+                iconType: NotificationIconType.ERROR,
+                description: "Failed to get directory",
+            });
+            notif.addViewDetailsLink();
+        }
+        return null;
+    }
+
+    runAppAction(action: string, options?: any) {
         switch(action) {
             case "open-folder":
                 this.promptOpenDirectory().then(dir => {
                     if(dir) {
-                        this.settings.addRecentFolder(dir);
+                        addRecentFolder(this.settings.settings, dir);
+                        this.settings.save();
                     }
                 });
+                break;
+            case "open-recent":
+                if(options != null && typeof options.path === "string") {
+                    this.openVideoDirectory(options.path);
+                    addRecentFolder(this.settings.settings, options.path);
+                    this.settings.save();
+                }
                 break;
             case "close-folder":
                 this.vdirViewer.unloadVideos();
@@ -165,9 +178,14 @@ export class VideoTrimApp {
                     this.trimEditor.canvas.video.unloadVideo();
                 }
                 break;
-            case "toggle-loop-editor":
+            case "toggle-loop":
                 if(this.editorOpened) {
                     this.trimEditor.canvas.video.setLooped(!this.trimEditor.canvas.video.isLooped());
+                }
+                break;
+            case "toggle-pin-timeline":
+                if(this.editorOpened) {
+                    this.trimEditor.bottomBar.setPinned(!this.trimEditor.bottomBar.isPinned());
                 }
                 break;
             case "exit":

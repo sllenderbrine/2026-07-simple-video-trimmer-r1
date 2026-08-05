@@ -33,6 +33,10 @@ export function seekVideo(video: HTMLVideoElement, currentTime: number) {
             connectionOwner.disconnectAll();
             res();
         }, { owners: [ connectionOwner ] });
+        new HtmlConnection(video, "error", () => {
+            connectionOwner.disconnectAll();
+            res();
+        }, { owners: [ connectionOwner ] });
         video.currentTime = currentTime;
     });
 }

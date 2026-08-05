@@ -19,6 +19,7 @@ export type ContextMenuLayout = {
     separator?: boolean,
     danger?: boolean,
     dangerSeparator?: boolean,
+    rightAligned?: boolean,
 };
 
 export class ContextMenuButtonClickEvent {
@@ -80,6 +81,7 @@ export class ContextMenuButton {
         iconScale: number | null = null,
         data: any = null,
         children: ContextMenuLayout[] | null = null,
+        rightAligned: boolean | null = null,
     ) {
         this.containerEl = document.createElement("div");
         this.containerEl.classList.add("ctxm-button-container");
@@ -90,7 +92,7 @@ export class ContextMenuButton {
         this.titleEl = document.createElement("div");
         this.containerEl.appendChild(this.titleEl);
         this.titleEl.classList.add("ctxm-title");
-        let nameClip = clipEllipses(title, 32);
+        let nameClip = rightAligned ? clipStartEllipses(title, 32) : clipEllipses(title, 32);
         this.titleEl.textContent = nameClip;
 
         this.setDisabled(disabled);
@@ -288,7 +290,12 @@ export class ContextMenu {
                 itemLayout.iconScale,
                 itemLayout.data,
                 itemLayout.children,
+                itemLayout.rightAligned,
             );
+            if(itemLayout.rightAligned) {
+                item.titleEl.style.textAlign = "right";
+                item.titleEl.style.width = "stretch";
+            }
             if(itemLayout.danger) {
                 item.titleEl.style.color = "rgb(216, 129, 141)";
                 if(item.prefixIconEl) {

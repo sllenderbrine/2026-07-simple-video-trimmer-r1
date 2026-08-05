@@ -19,3 +19,15 @@ export function createSettings(input?: any): Settings {
 
     return result;
 }
+
+export function addRecentFolder(settings: Settings, dir: string) {
+    let duplicateIndex = settings.recentFolders.indexOf(dir);
+    if(duplicateIndex != -1) {
+        settings.recentFolders.splice(duplicateIndex, 1);
+        settings.recentFolders.unshift(dir);
+        return;
+    }
+    settings.recentFolders.unshift(dir);
+    while(settings.recentFolders.length > 6)
+        settings.recentFolders.pop();
+}

@@ -23,6 +23,7 @@ export class ActiveNotification {
     progressValueEl?: HTMLDivElement;
     icon: string = "";
     iconType: NotificationIconType = NotificationIconType.NONE;
+    iconColor: Color = Color.WHITE;
     timeout: number = -1;
     timeoutStart: number = -1;
     timeoutPaused: boolean = false;
@@ -117,6 +118,10 @@ export class ActiveNotification {
             this.progressValueEl = document.createElement("div");
             this.progressEl.appendChild(this.progressValueEl);
             this.progressValueEl.classList.add("ntf-progress-value");
+            let pvcol = this.iconColor.clone();
+            pvcol.v += 40;
+            pvcol.s -= 20;
+            this.progressValueEl.style.backgroundColor = pvcol.toCss();
         }
         this.progressValueEl!.style.width = (v * 100) + "%";
     }
@@ -142,24 +147,39 @@ export class ActiveNotification {
         return iconContainer;
     }
 
-    createCustomIconContainer(v: string, color: Color, scale: number = 1) {
+    createCustomIconContainer(v: string, scale: number = 1) {
         const iconContainer = this.createIconContainer(scale);
-        iconContainer.style.color = color.toCss();
+        iconContainer.style.color = this.iconColor.toCss();
         fetch(joinPaths(PATH_ICONS, v + ".svg")).then(res => res.text()).then(text => {
             iconContainer.innerHTML = text;
         });
         return iconContainer;
     }
 
-    setIconType(v: NotificationIconType, color: Color) {
+    setIconColor(color: Color) {
+        this.iconColor = color;
+        if(this.progressValueEl != null) {
+            let pvcol = color.clone();
+            pvcol.v += 40;
+            pvcol.s -= 20;
+            this.progressValueEl.style.backgroundColor = pvcol.toCss();
+        }
+        const container = this.iconEl.querySelector(".ntf-icon") as HTMLDivElement;
+        if(container != null) {
+            container.style.color = color.toCss();
+        }
+    }
+
+    setIconType(v: NotificationIconType) {
         this.iconType = v;
         let iconContainer: HTMLDivElement;
         switch(v) {
             case NotificationIconType.CUSTOM:
-                this.createCustomIconContainer(this.icon, color);
+                this.createCustomIconContainer(this.icon);
                 break;
             case NotificationIconType.CHECK:
-                iconContainer = this.createCustomIconContainer("check-circle", Color.fromRgb(30, 165, 55), 1);
+                this.setIconColor(Color.fromRgb(30, 165, 55));
+                iconContainer = this.createCustomIconContainer("check-circle", 1);
                 iconContainer.style.scale = "0.5";
                 setTimeout(() => {
                     iconContainer.style.scale = "1";
@@ -170,7 +190,8 @@ export class ActiveNotification {
                 }, 100);
                 break;
             case NotificationIconType.ERROR:
-                iconContainer = this.createCustomIconContainer("cross-circle", Color.fromRgb(205, 30, 55), 1.1);
+                this.setIconColor(Color.fromRgb(205, 30, 55));
+                iconContainer = this.createCustomIconContainer("cross-circle", 1.1);
                 iconContainer.style.scale = "0.5";
                 setTimeout(() => {
                     iconContainer.style.scale = "1";
@@ -181,7 +202,8 @@ export class ActiveNotification {
                 }, 0);
                 break;
             case NotificationIconType.INFO:
-                iconContainer = this.createCustomIconContainer("info-circle-outline", Color.fromRgb(100, 100, 100), 1);
+                this.setIconColor(Color.fromRgb(100, 100, 100));
+                iconContainer = this.createCustomIconContainer("info-circle-outline", 1);
                 iconContainer.style.scale = "1";
                 break;
             case NotificationIconType.LOADING:
@@ -324,7 +346,7 @@ export class NotificationSystem {
     sendActiveNotification({
         title = "",
         iconType = NotificationIconType.INFO,
-        iconColor = Color.BLACK,
+        iconColor = Color.WHITE,
         icon = "",
         description = "",
         timeout = -1,
@@ -335,7 +357,8 @@ export class NotificationSystem {
     }: ActiveNotificationOptions = {}) {
         const notif = new ActiveNotification(this);
         notif.setTitle(title);
-        notif.setIconType(iconType, iconColor);
+        notif.setIconColor(iconColor);
+        notif.setIconType(iconType);
         notif.setIcon(icon, iconScale);
         notif.setDescription(description);
         notif.setTimeout(timeout);

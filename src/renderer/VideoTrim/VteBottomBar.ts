@@ -2,10 +2,14 @@ import { Connection } from "../../shared/EventSignals/Connection.js";
 import { ConnectionOwner } from "../../shared/EventSignals/ConnectionOwner.js";
 import { HtmlConnection } from "../../shared/EventSignals/HtmlConnection.js";
 import { Signal } from "../../shared/EventSignals/Signal.js";
+import { joinPaths } from "../../shared/Utility/FilePathUtility.js";
 import { clamp } from "../../shared/Utility/MathUtility.js";
 import { formatVideoDuration } from "../../shared/Utility/StringUtility.js";
 import { renderEvent } from "../Ui/WindowGlobal/WindowEvents.js";
 import type { VideoTrimEditor } from "./VideoTrimEditor.js";
+
+const PATH_RESOURCES = "..";
+const PATH_ICONS = joinPaths(PATH_RESOURCES, "icons");
 
 export class VteBottomBar {
     containerEl: HTMLDivElement;
@@ -20,7 +24,13 @@ export class VteBottomBar {
     toolsLeftEl: HTMLDivElement;
     toolsRightEl: HTMLDivElement;
     toolsCenterEl: HTMLDivElement;
+    volumeSliderContainerEl: HTMLDivElement;
+    volumeSliderEl: HTMLDivElement;
     hovering: boolean = false;
+    _pinned: boolean = false;
+    animConnection: Connection<any> | null = null;
+    hoverTimeout: number = 0;
+    hiddenOffScreen: boolean = true;
     seekInputEvent: Signal<[t: number]> = new Signal();
     seekStartEvent: Signal<[]> = new Signal();
     seekEndEvent: Signal<[]> = new Signal();
@@ -66,52 +76,54 @@ export class VteBottomBar {
         this.toolsContainerEl.classList.add("vtebb-tools-container");
 
         this.toolsLeftEl = document.createElement("div");
-        this.containerEl.appendChild(this.toolsLeftEl);
-        this.toolsLeftEl.classList.add("vtebb-tools-row");
+        this.toolsContainerEl.appendChild(this.toolsLeftEl);
+        this.toolsLeftEl.classList.add("vtebb-tools-left");
 
         this.toolsRightEl = document.createElement("div");
-        this.containerEl.appendChild(this.toolsRightEl);
-        this.toolsRightEl.classList.add("vtebb-tools-row");
+        this.toolsContainerEl.appendChild(this.toolsRightEl);
+        this.toolsRightEl.classList.add("vtebb-tools-right");
 
         this.toolsCenterEl = document.createElement("div");
-        this.containerEl.appendChild(this.toolsCenterEl);
+        this.toolsContainerEl.appendChild(this.toolsCenterEl);
         this.toolsCenterEl.classList.add("vtebb-tools-center");
 
-        let animConnection: Connection<any> | null = null;
-        let hoverTimeout = 0;
+        this.volumeSliderContainerEl = document.createElement("div");
+        this.toolsRightEl.appendChild(this.volumeSliderContainerEl);
+        this.volumeSliderContainerEl.classList.add("vtebb-volume-container");
+
+        this.volumeSliderEl = document.createElement("div");
+        this.volumeSliderContainerEl.appendChild(this.volumeSliderEl);
+        this.volumeSliderEl.classList.add("vtebb-volume-slider");
+
+        const volumeIcon0 = document.createElement("div");
+        this.volumeSliderContainerEl.appendChild(volumeIcon0);
+        volumeIcon0.classList.add("vtebb-volume-icon");
+        fetch(joinPaths(PATH_ICONS, "volume0.svg")).then(res => res.text()).then(text => {
+            volumeIcon0.innerHTML = text;
+        });
+
         new HtmlConnection(window, "mousemove", (e: MouseEvent) => {
             if(!this.editor.visible)
                 return;
-            hoverTimeout = 2;
+            this.hoverTimeout = 2;
             if(e.clientY >= window.innerHeight - 100) {
                 this.hovering = true;
-                if(animConnection != null) {
-                    animConnection.disconnect();
-                    animConnection = null
+                if(this.animConnection != null) {
+                    this.animConnection.disconnect();
+                    this.animConnection = null;
                 }
                 return;
             }
             this.hovering = false;
-            if(animConnection == null) {
-                const rect = this.containerEl.getBoundingClientRect();
-                let currY = window.innerHeight - (rect.top + rect.height);
-                this.containerEl.style.bottom = "0px";
-                this.containerEl.animate([
-                    { bottom: `${currY}px`, },
-                    { bottom: this.containerEl.style.bottom, },
-                ], { duration: 200, easing: "ease", });
-                animConnection = renderEvent.connect(dt => {
-                    hoverTimeout -= dt;
-                    if(hoverTimeout < 0) {
-                        const rect = this.containerEl.getBoundingClientRect();
-                        let currY = window.innerHeight - (rect.top + rect.height);
-                        this.containerEl.style.bottom = "-100px";
-                        this.containerEl.animate([
-                            { bottom: `${currY}px`, },
-                            { bottom: this.containerEl.style.bottom, },
-                        ], { duration: 200, easing: "ease", });
-                        animConnection!.disconnect();
-                        animConnection = null;
+            if(this.animConnection == null) {
+                this.setVisibleAnimate(true);
+                this.animConnection = renderEvent.connect(dt => {
+                    this.hoverTimeout -= dt;
+                    if(this.hoverTimeout < 0) {
+                        if(!this._pinned)
+                            this.setVisibleAnimate(false);
+                        this.animConnection!.disconnect();
+                        this.animConnection = null;
                     }
                 }, { owners: [ this.connectionOwner ] });
             }
@@ -159,5 +171,33 @@ export class VteBottomBar {
             this.currentTimeEl.textContent = formatVideoDuration(this.editor.canvas.video.videoEl.currentTime);
             this.totalTimeEl.textContent = formatVideoDuration(this.editor.canvas.video.videoEl.duration);
         }, { owners: [ this.connectionOwner, ], initArgs: [], });
+    }
+
+    isPinned() {
+        return this._pinned;
+    }
+
+    setPinned(v: boolean) {
+        this._pinned = v;
+        if(v)
+            this.setVisibleAnimate(true);
+        else
+            if(this.hoverTimeout < 0)
+                this.setVisibleAnimate(false);
+            else
+                this.setVisibleAnimate(true);
+    }
+
+    setVisibleAnimate(v: boolean) {
+        if(v == !this.hiddenOffScreen)
+            return;
+        this.hiddenOffScreen = !v; 
+        const rect = this.containerEl.getBoundingClientRect();
+        let currY = window.innerHeight - (rect.top + rect.height);
+        this.containerEl.style.bottom = v ? "0px" : "-100px";
+        this.containerEl.animate([
+            { bottom: `${currY}px`, },
+            { bottom: this.containerEl.style.bottom, },
+        ], { duration: 200, easing: "ease", });
     }
 }

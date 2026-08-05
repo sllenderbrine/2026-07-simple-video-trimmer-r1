@@ -83,9 +83,13 @@ export class VideoTrimWindowBar extends WindowBar {
                     {
                         title: "Recents",
                         icon: "library",
-                        children: [
-
-                        ],
+                        children: this.app.settings.loaded.get() ? this.app.settings.settings.recentFolders.map(v => {
+                            return {
+                                title: v,
+                                data: { action: "open-recent", path: v, },
+                                rightAligned: true,
+                            };
+                        }) : [ ],
                         data: { action: "coming-soon", },
                     },
                     {
@@ -181,13 +185,18 @@ export class VideoTrimWindowBar extends WindowBar {
                     {
                         title: "Loop Video",
                         icon: this.app.trimEditor.canvas.video.isLooped() ? "small-check" : undefined,
-                        data: { action: "toggle-loop-editor", },
+                        data: { action: "toggle-loop", },
                     },
                     {
                         title: "Free Move",
                         keybind: "Ctrl + 0",
                         icon: this.app.trimEditor.canvas.fitToContainerLock ? undefined : "small-check",
                         data: { action: "toggle-free-move", },
+                    },
+                    {
+                        title: "Pin Video Timeline",
+                        icon: this.app.trimEditor.bottomBar.isPinned() ? "small-check" : undefined,
+                        data: { action: "toggle-pin-timeline", },
                     },
                 ];
             } else {
@@ -302,7 +311,7 @@ export class VideoTrimWindowBar extends WindowBar {
 
         this.menuButtonClickEvent.connect((e) => {
             if(e.contextMenuButton != null && e.contextMenuButton.data != null && e.contextMenuButton.data.action != null) {
-                this.app.runAppAction(e.contextMenuButton.data.action);
+                this.app.runAppAction(e.contextMenuButton.data.action, e.contextMenuButton.data);
                 let parent = e.contextMenu!;
                 while(parent.parent && parent.parent != parent)
                     parent = parent.parent;

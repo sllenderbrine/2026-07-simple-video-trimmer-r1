@@ -1,15 +1,13 @@
-import { Signal } from "../../shared/EventSignals/Signal.js";
-import { delay } from "../../shared/Utility/PromiseUtility.js";
+import { ObservedValue } from "../../shared/EventSignals/ObservedValue.js";
+import { BusyProcess } from "../../shared/Utility/UiUtility.js";
 import { createSettings, Settings } from "../../shared/VideoTrim/UserSettingsUtility.js";
 import { NotificationIconType } from "../Ui/NotificationSystem.js";
 import { VideoTrimApp } from "./VideoTrimApp.js";
 
 export class VideoTrimSettings {
     settings: Settings = createSettings();
-    loaded: boolean = false;
-    saving: boolean = false;
-    awaitingSave: boolean = false;
-    loadEvent: Signal<[]> = new Signal();
+    loaded = new ObservedValue(false);
+    _saving = new BusyProcess<void>();
     constructor(
         public app: VideoTrimApp,
     ) {
@@ -17,8 +15,7 @@ export class VideoTrimSettings {
             if(res.success) {
                 this.settings = res.value;
                 this.app.startupMenu.updateRecents();
-                this.loaded = true;
-                this.loadEvent.fire();
+                this.loaded.set(true);
             } else {
                 this.app.notificationSystem.sendActiveNotification({
                     title: "Error",
@@ -30,24 +27,12 @@ export class VideoTrimSettings {
     }
 
     async save() {
-        if(!this.loaded)
+        if(!(await this._saving.waitForTurn()))
             return;
-        if(this.saving) {
-            if(this.awaitingSave)
-                return;
-            this.awaitingSave = true;
-            while(this.saving)
-                await delay(50);
-            this.awaitingSave = false;
-        }
-        this.saving = true;
+        if(!this.loaded.get())
+            return;
+        this._saving.setActive(true);
         await window.settingsApi.save(this.settings);
-        this.saving = false;
-    }
-
-    addRecentFolder(dir: string) {
-        this.settings.recentFolders.unshift(dir);
-        while(this.settings.recentFolders.length > 6)
-            this.settings.recentFolders.pop();
+        this._saving.setActive(false);
     }
 }

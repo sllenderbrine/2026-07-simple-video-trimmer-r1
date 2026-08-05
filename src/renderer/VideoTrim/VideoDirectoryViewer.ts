@@ -126,6 +126,8 @@ async function startThumbnailLoader(vdv: VideoDirectoryViewer) {
         fileView.hasThumbnail = true;
         thumbnailCompleteCount++;
 
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
         unloadVideo(video);
         const success_src = await loadVideo(video, fileView.path);
         if(!success_src)
