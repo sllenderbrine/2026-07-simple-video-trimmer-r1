@@ -14,28 +14,32 @@ export class StartupMenu {
         this.containerEl = document.createElement("div");
         this.containerEl.classList.add("startup-container");
         
-        let testCanvas = document.createElement("img");
-        this.containerEl.appendChild(testCanvas);
-        testCanvas.style.position = "absolute";
-        testCanvas.style.width = "100%";
-        testCanvas.style.height = "100%";
-        testCanvas.style.objectFit = "cover";
-        testCanvas.style.left = "0px";
-        testCanvas.style.top = "0px";
-        testCanvas.style.zIndex = "-1";
-        testCanvas.src = joinPaths(PATH_RESOURCES, "textures/startbg.png");
+        let background = document.createElement("img");
+        this.containerEl.appendChild(background);
+        background.style.position = "absolute";
+        background.style.width = "100%";
+        background.style.height = "100%";
+        background.style.objectFit = "cover";
+        background.style.left = "0px";
+        background.style.top = "0px";
+        background.style.zIndex = "-1";
+        background.style.userSelect = "none";
+        background.style.pointerEvents = "none";
+        background.src = joinPaths(PATH_RESOURCES, "textures/startbg.png");
         
-        testCanvas = document.createElement("img");
-        this.containerEl.appendChild(testCanvas);
-        testCanvas.style.position = "absolute";
-        testCanvas.style.width = "100%";
-        testCanvas.style.height = "100%";
-        testCanvas.style.objectFit = "fill";
-        testCanvas.style.imageRendering = "pixelated";
-        testCanvas.style.left = "0px";
-        testCanvas.style.top = "0px";
-        testCanvas.style.zIndex = "1";
-        testCanvas.src = joinPaths(PATH_RESOURCES, "textures/startoverlay.png");
+        let overlay = document.createElement("img");
+        this.containerEl.appendChild(overlay);
+        overlay.style.position = "absolute";
+        overlay.style.width = "100%";
+        overlay.style.height = "100%";
+        overlay.style.objectFit = "fill";
+        overlay.style.imageRendering = "pixelated";
+        overlay.style.left = "0px";
+        overlay.style.top = "0px";
+        overlay.style.zIndex = "1";
+        overlay.style.userSelect = "none";
+        overlay.style.pointerEvents = "none";
+        overlay.src = joinPaths(PATH_RESOURCES, "textures/startoverlay.png");
 
         this.columnEl0 = document.createElement("div");
         this.containerEl.appendChild(this.columnEl0)

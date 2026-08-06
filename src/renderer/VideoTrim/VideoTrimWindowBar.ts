@@ -1,4 +1,5 @@
 import { ConnectionOwner } from "../../shared/EventSignals/ConnectionOwner.js";
+import { ContextMenuTextAlign } from "../Ui/ContextMenu.js";
 import { WindowBar, WindowBarSide } from "../Ui/WindowBar.js";
 import { WindowKeypresses } from "../Ui/WindowGlobal/WindowKeypresses.js";
 import { VdvSortMethod } from "./VideoDirectoryViewer.js";
@@ -87,7 +88,7 @@ export class VideoTrimWindowBar extends WindowBar {
                             return {
                                 title: v,
                                 data: { action: "open-recent", path: v, },
-                                rightAligned: true,
+                                textAlign: ContextMenuTextAlign.RIGHT,
                             };
                         }) : [ ],
                     },
@@ -308,10 +309,10 @@ export class VideoTrimWindowBar extends WindowBar {
             ];
         }, null, WindowBarSide.LEFT);
 
-        this.menuButtonClickEvent.connect((e) => {
-            if(e.contextMenuButton != null && e.contextMenuButton.data != null && e.contextMenuButton.data.action != null) {
-                this.app.runAppAction(e.contextMenuButton.data.action, e.contextMenuButton.data);
-                let parent = e.contextMenu!;
+        this.menuButtonClickEvent.connect((ctxbtn, wbtn) => {
+            if(ctxbtn.data != null && ctxbtn.data.action != null) {
+                this.app.runAppAction(ctxbtn.data.action, ctxbtn.data);
+                let parent = ctxbtn.contextMenu;
                 while(parent.parent && parent.parent != parent)
                     parent = parent.parent;
                 parent.remove();

@@ -43,7 +43,7 @@ export class VideoPlayerCanvas {
                 this.texCtx.drawImage(this.video.videoEl, 0, 0);
                 this.renderedCanvas.setTexture(this.textureCanvasEl);
             }
-            this.renderedCanvas.render();
+            this.render();
 
             this.renderEvent.fire();
         }
@@ -75,6 +75,12 @@ export class VideoPlayerCanvas {
             this.textureCanvasEl.width = this.video.videoEl.videoWidth;
             this.textureCanvasEl.height = this.video.videoEl.videoHeight;
         }
+    }
+
+    clear() {
+        this.texCtx.clearRect(0, 0, this.textureCanvasEl.width, this.textureCanvasEl.height);
+        this.renderedCanvas.setTexture(this.textureCanvasEl);
+        this.render();
     }
 
     updateRenderedOffset() {
@@ -185,6 +191,7 @@ export class VideoPlayerCanvas {
     }
 
     async setUrl(url: string) {
+        this.clear();
         return await this.video.setUrl(url);
     }
 

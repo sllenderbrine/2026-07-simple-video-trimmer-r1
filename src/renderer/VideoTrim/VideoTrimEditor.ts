@@ -5,7 +5,7 @@ import { renderEvent } from "../Ui/WindowGlobal/WindowEvents.js";
 import { WindowKeypresses } from "../Ui/WindowGlobal/WindowKeypresses.js";
 import { VdvVideo } from "./VideoDirectoryViewer.js";
 import type { VideoTrimApp } from "./VideoTrimApp.js";
-import { VteBottomBar } from "./VteBottomBar.js";
+import { VteBottomBar } from "./VteBottomBar/VteBottomBar.js";
 
 const SHIFT_SPEED = 50;
 const PRECISE_SHIFT_SPEED = 250;
@@ -80,14 +80,14 @@ export class VideoTrimEditor {
         this.containerEl.appendChild(this.bottomBar.containerEl);
 
         let seekInputT = 0;
-        this.bottomBar.seekInputEvent.connect(t => {
+        this.bottomBar.duration.seekInputEvent.connect(t => {
             seekInputT = t;
             this.canvas.seekTo(t);
         }, { owners: [ this.connectionOwner, ], });
-        this.bottomBar.seekStartEvent.connect(() => {
+        this.bottomBar.duration.seekStartEvent.connect(() => {
             this.canvas.video.setInputtingSeek(true);
         }, { owners: [ this.connectionOwner, ], });
-        this.bottomBar.seekEndEvent.connect(() => {
+        this.bottomBar.duration.seekEndEvent.connect(() => {
             if(!this.canvas.isPausedIgnoreInput()) {
                 const maxSeek = this.canvas.video.getMaxSeek();
                 if(maxSeek != null && seekInputT >= maxSeek) {

@@ -8,28 +8,6 @@ import { ContextMenuButton } from "./ContextMenu.js";
 const PATH_RESOURCES = "..";
 const PATH_ICONS = joinPaths(PATH_RESOURCES, "icons");
 
-export class WindowBarMenuClickEvent {
-    contextMenu?: ContextMenu;
-    contextMenuButton?: ContextMenuButton;
-    windowBarButton?: WindowBarButton;
-    index: number = 0;
-    constructor() {
-        
-    }
-
-    clone() {
-        return new WindowBarMenuClickEvent().copy(this) as this;
-    }
-    
-    copy(other: WindowBarMenuClickEvent) {
-        this.contextMenu = other.contextMenu;
-        this.contextMenuButton = other.contextMenuButton;
-        this.windowBarButton = other.windowBarButton;
-        this.index = other.index;
-        return this;
-    }
-}
-
 export class WindowBarButton {
     containerEl: HTMLDivElement;
     buttonEl: HTMLButtonElement;
@@ -79,8 +57,8 @@ export class WindowBarButton {
                     menu.addLayout(layout);
                     parent.contextMenus.push(menu);
                     this.childContextMenu = menu;
-                    menu.buttonClickEvent.connect((e) => {
-                        parent.menuButtonClickEvent.fire(e);
+                    menu.buttonClickEvent.connect((btn) => {
+                        parent.menuButtonClickEvent.fire(btn, this);
                     }, { owners: [ parent.connectionOwner, menu.connectionOwner, this.connectionOwner ] });
                     menu.clickOffEvent.connect((e) => {
                         if(e.target == this.buttonEl)
@@ -158,7 +136,7 @@ export class WindowBar {
     closeFunc: () => void;
     maximizeFunc: () => void;
     minimizeFunc: () => void;
-    menuButtonClickEvent: Signal<[e: WindowBarMenuClickEvent]> = new Signal();
+    menuButtonClickEvent: Signal<[ctxbtn: ContextMenuButton, wbtn: WindowBarButton]> = new Signal();
     buttonClickEvent: Signal<[btn: WindowBarButton]> = new Signal();
     connectionOwner: ConnectionOwner = new ConnectionOwner();
     constructor() {

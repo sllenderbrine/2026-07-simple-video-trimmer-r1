@@ -19,28 +19,8 @@ export type ContextMenuLayout = {
     separator?: boolean,
     danger?: boolean,
     dangerSeparator?: boolean,
-    rightAligned?: boolean,
+    textAlign?: ContextMenuTextAlign,
 };
-
-export class ContextMenuButtonClickEvent {
-    contextMenu?: ContextMenu;
-    contextMenuButton?: ContextMenuButton;
-    index: number = 0;
-    constructor() {
-        
-    }
-
-    clone() {
-        return new ContextMenuButtonClickEvent().copy(this) as this;
-    }
-
-    copy(other: ContextMenuButtonClickEvent) {
-        this.contextMenu = other.contextMenu;
-        this.contextMenuButton = other.contextMenuButton;
-        this.index = other.index;
-        return this;
-    } 
-}
 
 export class ContextMenuClickOffEvent {
     contextMenu?: ContextMenu;
@@ -60,6 +40,12 @@ export class ContextMenuClickOffEvent {
     }
 }
 
+export enum ContextMenuTextAlign {
+    LEFT = 0,
+    CENTER = 1,
+    RIGHT = 2,
+}
+
 export class ContextMenuButton {
     containerEl: HTMLDivElement;
     buttonEl: HTMLButtonElement;
@@ -71,17 +57,10 @@ export class ContextMenuButton {
     childContextMenu?: ContextMenu;
     data?: any;
     disabled: boolean = false;
+    textAlign = ContextMenuTextAlign.LEFT;
     connectionOwner: ConnectionOwner = new ConnectionOwner();
     constructor(
-        title: string,
-        keybind: string | null = null,
-        tooltip: string | null = null,
-        disabled: boolean = false,
-        icon: string | null = null,
-        iconScale: number | null = null,
-        data: any = null,
-        children: ContextMenuLayout[] | null = null,
-        rightAligned: boolean | null = null,
+        public contextMenu: ContextMenu,
     ) {
         this.containerEl = document.createElement("div");
         this.containerEl.classList.add("ctxm-button-container");
@@ -92,16 +71,11 @@ export class ContextMenuButton {
         this.titleEl = document.createElement("div");
         this.containerEl.appendChild(this.titleEl);
         this.titleEl.classList.add("ctxm-title");
-        let nameClip = rightAligned ? clipStartEllipses(title, 32) : clipEllipses(title, 32);
+    }
+
+    setTitle(title: string) {
+        let nameClip = this.textAlign == ContextMenuTextAlign.RIGHT ? clipStartEllipses(title, 32) : clipEllipses(title, 32);
         this.titleEl.textContent = nameClip;
-
-        this.setDisabled(disabled);
-        this.setTooltip(tooltip);
-        this.setKeybind(keybind);
-        this.setIcon(icon, iconScale);
-        this.setChildrenLayout(children);
-
-        this.data = data;
     }
 
     setTooltip(tooltip?: string | null) {
@@ -203,7 +177,7 @@ export class ContextMenu {
     buttons: ContextMenuButton[] = [];
     childrenMenus: ContextMenu[] = [];
     elementToButton: Map<EventTarget, ContextMenuButton> = new Map();
-    buttonClickEvent: Signal<[e: ContextMenuButtonClickEvent]> = new Signal();
+    buttonClickEvent: Signal<[btn: ContextMenuButton]> = new Signal();
     clickOffEvent: Signal<[e: ContextMenuClickOffEvent]> = new Signal();
     removeEvent: Signal<[]> = new Signal();
     connectionOwner: ConnectionOwner = new ConnectionOwner();
@@ -233,8 +207,8 @@ export class ContextMenu {
                         if(rect3.top + rect3.height < rect2.top + rect2.height - 8) {
                             menu.containerEl.style.borderBottomLeftRadius = "0px";
                         }
-                        menu.buttonClickEvent.connect((e) => {
-                            this.buttonClickEvent.fire(e);
+                        menu.buttonClickEvent.connect((...args) => {
+                            this.buttonClickEvent.fire(...args);
                         }, { owners: [ this.connectionOwner ] });
                         menu.clickOffEvent.connect((e) => {
                             if(e.target == btn.buttonEl)
@@ -261,12 +235,7 @@ export class ContextMenu {
             if(e.target != null) {
                 const btn = this.elementToButton.get(e.target);
                 if(btn != null) {
-                    const index = this.buttons.indexOf(btn);
-                    const e = new ContextMenuButtonClickEvent();
-                    e.contextMenu = this;
-                    e.contextMenuButton = btn;
-                    e.index = index;
-                    this.buttonClickEvent.fire(e);
+                    this.buttonClickEvent.fire(btn);
                     return;
                 }
             }
@@ -281,19 +250,19 @@ export class ContextMenu {
     
     addLayout(layout: ContextMenuLayout[]): this {
         for(const itemLayout of layout) {
-            const item = new ContextMenuButton(
-                itemLayout.title,
-                itemLayout.keybind,
-                itemLayout.tooltip,
-                itemLayout.disabled,
-                itemLayout.icon,
-                itemLayout.iconScale,
-                itemLayout.data,
-                itemLayout.children,
-                itemLayout.rightAligned,
-            );
-            if(itemLayout.rightAligned) {
+            const item = new ContextMenuButton(this);
+            item.setTitle(itemLayout.title);
+            item.setDisabled(itemLayout.disabled ?? false);
+            item.setTooltip(itemLayout.tooltip);
+            item.setKeybind(itemLayout.keybind);
+            item.setIcon(itemLayout.icon, itemLayout.iconScale);
+            item.setChildrenLayout(itemLayout.children);
+            item.data = itemLayout.data;
+            if(itemLayout.textAlign == ContextMenuTextAlign.RIGHT) {
                 item.titleEl.style.textAlign = "right";
+                item.titleEl.style.width = "stretch";
+            } else if(itemLayout.textAlign == ContextMenuTextAlign.CENTER) {
+                item.titleEl.style.textAlign = "center";
                 item.titleEl.style.width = "stretch";
             }
             if(itemLayout.danger) {
