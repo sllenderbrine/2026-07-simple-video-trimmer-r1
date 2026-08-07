@@ -1,5 +1,6 @@
 import { ConnectionOwner } from "../../../shared/EventSignals/ConnectionOwner.js";
 import { HtmlConnection } from "../../../shared/EventSignals/HtmlConnection.js";
+import { Signal } from "../../../shared/EventSignals/Signal.js";
 import { joinPaths } from "../../../shared/Utility/FilePathUtility.js";
 import { clamp } from "../../../shared/Utility/MathUtility.js";
 import { delay } from "../../../shared/Utility/PromiseUtility.js";
@@ -25,6 +26,8 @@ export class VtebbToolsRight {
     maxVolume: number = 200;
     unmuteToVolume: number = 100;
     muted: boolean = false;
+    hideTooltipAnimIndex: number = 0;
+    volumeInputEvent: Signal<[volume: number]> = new Signal();
     connectionOwner: ConnectionOwner = new ConnectionOwner();
     constructor(public bottombar: VteBottomBar) {
         this.containerEl = document.createElement("div");
@@ -110,6 +113,7 @@ export class VtebbToolsRight {
                 this.volume = clamp((startT + dt) * (this.maxVolume - this.minVolume) + this.minVolume, this.minVolume, this.maxVolume);
                 this._snapVolume();
                 this.updateVolumeVisual();
+                this.volumeInputEvent.fire(this.volume);
             }
             if(e.target != this.volumeHandleEl) {
                 let rect = this.volumeSliderEl.getBoundingClientRect();
@@ -133,7 +137,7 @@ export class VtebbToolsRight {
             }, { owners: [ this.connectionOwner, dragConnections, ], });
             new HtmlConnection(window, "mouseup", (e: MouseEvent) => {
                 dragConnections.disconnectAll();
-                this.hideTooltip();
+                this.hideTooltip(0.5);
             }, { owners: [ this.connectionOwner, dragConnections, ], });
         }
         new HtmlConnection(this.volumeSliderEl, "mousedown", (e: MouseEvent) => {
@@ -147,6 +151,7 @@ export class VtebbToolsRight {
         
         new HtmlConnection(this.iconEl, "click", (e: MouseEvent) => {
             this.toggleMuted();
+            this.volumeInputEvent.fire(this.volume);
         }, { owners: [ this.connectionOwner, ], });
 
         this._updateIcon();
@@ -177,6 +182,7 @@ export class VtebbToolsRight {
     }
 
     showTooltip() {
+        this.hideTooltipAnimIndex++;
         this.volumeTooltipEl.animate([
             { transform: "translate(-50%, -150%) translateY(-20px)", opacity: "0", },
             { transform: "translate(-50%, -150%) translateY(0px)", opacity: "1", },
@@ -184,7 +190,18 @@ export class VtebbToolsRight {
         this.volumeTooltipEl.style.opacity = "1";
     }
 
-    hideTooltip() {
+    async hideTooltip(timeout?: number) {
+        if(timeout != null) {
+            let i = ++this.hideTooltipAnimIndex;
+            let startT = performance.now();
+            let now = startT;
+            while((now - startT) / 1000 < timeout) {
+                await delay(100);
+                if(i !== this.hideTooltipAnimIndex)
+                    return;
+                now = performance.now();
+            }
+        }
         this.volumeTooltipEl.animate([
             { transform: "translate(-50%, -150%) translateY(0px)", opacity: "1", },
             { transform: "translate(-50%, -150%) translateY(-20px)", opacity: "0", },

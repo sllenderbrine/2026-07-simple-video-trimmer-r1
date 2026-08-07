@@ -79,6 +79,10 @@ export class VideoTrimEditor {
         this.bottomBar = new VteBottomBar(this);
         this.containerEl.appendChild(this.bottomBar.containerEl);
 
+        this.bottomBar.toolsRight.volumeInputEvent.connect(vol => {
+            this.canvas.video.setVolume(vol);
+        }, { owners: [ this.connectionOwner, ], });
+
         let seekInputT = 0;
         this.bottomBar.duration.seekInputEvent.connect(t => {
             seekInputT = t;

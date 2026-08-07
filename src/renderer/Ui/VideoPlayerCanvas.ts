@@ -2,6 +2,7 @@ import { ConnectionOwner } from "../../shared/EventSignals/ConnectionOwner.js";
 import { HtmlConnection } from "../../shared/EventSignals/HtmlConnection.js";
 import { Signal } from "../../shared/EventSignals/Signal.js";
 import { get2dContext } from "../../shared/Utility/Canvas2dUtility.js";
+import { lerpClamped } from "../../shared/Utility/MathUtility.js";
 import { Vec3 } from "../../shared/Vectors/Vec3.js";
 import { CanvasWithRenderedOffset } from "./CanvasWithRenderedOffset.js";
 import { VideoWithScriptControls } from "./VideoWithScriptControls.js";
@@ -14,6 +15,7 @@ export class VideoPlayerCanvas {
     visible: boolean = true;
     fitToContainerLock: boolean = true;
     camera: Vec3 = new Vec3(0, 0, 1);
+    textureUpdateEvent: Signal<[]> = new Signal();
     renderEvent: Signal<[]> = new Signal();
     connectionOwner: ConnectionOwner = new ConnectionOwner();
     constructor() {
@@ -41,6 +43,7 @@ export class VideoPlayerCanvas {
         const render = () => {
             if(this.video.videoEl.videoWidth > 0 && this.video.videoEl.videoHeight > 0) {
                 this.texCtx.drawImage(this.video.videoEl, 0, 0);
+                this.textureUpdateEvent.fire();
                 this.renderedCanvas.setTexture(this.textureCanvasEl);
             }
             this.render();
@@ -61,6 +64,30 @@ export class VideoPlayerCanvas {
             return requestAnimationFrame(pausedRender);
         }
         pausedRender();
+    }
+
+    async saveScreenshot(): ReturnType<typeof window.screenshotApi.saveAndCopy> {
+        if(!this.video.isLoaded())
+            return { success: false, error: { message: "Video has not loaded", }, };
+        if(this.textureCanvasEl.width <= 1 || this.textureCanvasEl.height <= 1)
+            return { success: false, error: { message: "Video has zero dimensions", }, };
+        const tempCanvas = document.createElement("canvas");
+        const tempCtx = get2dContext(tempCanvas);
+        tempCanvas.width = this.textureCanvasEl.width;
+        tempCanvas.height = this.textureCanvasEl.height;
+        tempCtx.drawImage(this.video.videoEl, 0, 0);
+        const pngDataUrl = tempCanvas.toDataURL("image/png");
+        let startTime = performance.now();
+        const ctx = this.texCtx;
+        let con = this.textureUpdateEvent.connect(() => {
+            const t = lerpClamped(0, Math.PI, (performance.now() - startTime) / 300);
+            ctx.fillStyle = `rgb(150, 150, 150, ${Math.sin(t) * 0.5})`;
+            ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        }, { owners: [ this.connectionOwner, ], });
+        setTimeout(() => {
+            con.disconnect();
+        }, 1000);
+        return await window.screenshotApi.saveAndCopy(pngDataUrl);
     }
 
     updateTextureCanvasSize() {

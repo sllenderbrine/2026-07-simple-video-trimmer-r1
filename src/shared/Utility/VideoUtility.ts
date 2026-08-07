@@ -59,3 +59,16 @@ export function loadVideoMetadata(
         video.src = src;
     });
 }
+
+export function createVideoGain(video: HTMLVideoElement) {
+    let audioContext = new window.AudioContext();
+    const source = audioContext.createMediaElementSource(video);
+    let gainNode = audioContext.createGain();
+    gainNode.gain.value = 1;
+    source.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    return {
+        gainNode,
+        set: (n: number) => { gainNode.gain.value = n },
+    };
+}

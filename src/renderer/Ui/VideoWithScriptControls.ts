@@ -1,7 +1,9 @@
 import { ConnectionOwner } from "../../shared/EventSignals/ConnectionOwner.js";
 import { HtmlConnection } from "../../shared/EventSignals/HtmlConnection.js";
 import { Signal } from "../../shared/EventSignals/Signal.js";
+import { clamp } from "../../shared/Utility/MathUtility.js";
 import { BusyProcess, waitForHtmlEvent } from "../../shared/Utility/UiUtility.js";
+import { createVideoGain } from "../../shared/Utility/VideoUtility.js";
 
 export class VideoWithScriptControls {
     videoEl: HTMLVideoElement;
@@ -16,6 +18,9 @@ export class VideoWithScriptControls {
     _maxSeek: number | null = null;
     _looped: boolean = false;
 
+    _gain: ReturnType<typeof createVideoGain>;
+    _volume: number = 100;
+
     videoLoadEvent: Signal<[]> = new Signal();
     
     connectionOwner: ConnectionOwner = new ConnectionOwner();
@@ -23,6 +28,7 @@ export class VideoWithScriptControls {
         videoEl?: HTMLVideoElement
     ) {
         this.videoEl = videoEl ?? document.createElement("video");
+        this._gain = createVideoGain(this.videoEl);
 
         const onVideoFrame = () => {
             const cTime = this.videoEl.currentTime;
@@ -165,6 +171,16 @@ export class VideoWithScriptControls {
     
     isLoaded() {
         return this._videoLoaded;
+    }
+
+    getVolume() {
+        return this._volume;
+    }
+
+    setVolume(n: number) {
+        n = clamp(n, 0, 600);
+        this._volume = n;
+        this._gain.set(n / 100);
     }
 
     play() {

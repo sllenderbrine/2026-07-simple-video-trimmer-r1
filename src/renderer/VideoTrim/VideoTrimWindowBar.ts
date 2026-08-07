@@ -5,6 +5,9 @@ import { WindowKeypresses } from "../Ui/WindowGlobal/WindowKeypresses.js";
 import { VdvSortMethod } from "./VideoDirectoryViewer.js";
 import type { VideoTrimApp } from "./VideoTrimApp.js";
 
+const CHECK_ICON = "small-check";
+const UNCHECK_ICON = "dashed-box";
+
 export class VideoTrimWindowBar extends WindowBar {
     connectionOwner: ConnectionOwner = new ConnectionOwner();
     constructor(
@@ -137,32 +140,32 @@ export class VideoTrimWindowBar extends WindowBar {
                         children: [
                             {
                                 title: "None",
-                                icon: "small-check",
+                                icon: CHECK_ICON,
                                 data: { action: "editor-crop-none" },
                             },
                             {
                                 title: "Left Half",
-                                icon: undefined,
+                                icon: UNCHECK_ICON,
                                 data: { action: "editor-crop-left-half" },
                             },
                             {
                                 title: "Right Half",
-                                icon: undefined,
+                                icon: UNCHECK_ICON,
                                 data: { action: "editor-crop-right-half" },
                             },
                             {
                                 title: "Top Half",
-                                icon: undefined,
+                                icon: UNCHECK_ICON,
                                 data: { action: "editor-crop-top-half" },
                             },
                             {
                                 title: "Bottom Half",
-                                icon: undefined,
+                                icon: UNCHECK_ICON,
                                 data: { action: "editor-crop-bottom-half" },
                             },
                             {
                                 title: "Custom...",
-                                icon: undefined,
+                                icon: UNCHECK_ICON,
                                 data: { action: "editor-crop-prompt-custom" },
                             },
                         ],
@@ -179,23 +182,23 @@ export class VideoTrimWindowBar extends WindowBar {
                 return [
                     {
                         title: "Take Screenshot",
-                        icon: "screenshot",
+                        icon: "camera",
                         data: { action: "editor-snapshot", },
                     },
                     {
                         title: "Loop Video",
-                        icon: this.app.trimEditor.canvas.video.isLooped() ? "small-check" : undefined,
+                        icon: this.app.trimEditor.canvas.video.isLooped() ? CHECK_ICON : UNCHECK_ICON,
                         data: { action: "toggle-loop", },
                     },
                     {
                         title: "Free Move",
                         keybind: "Ctrl + 0",
-                        icon: this.app.trimEditor.canvas.fitToContainerLock ? undefined : "small-check",
+                        icon: this.app.trimEditor.canvas.fitToContainerLock ? UNCHECK_ICON : CHECK_ICON,
                         data: { action: "toggle-free-move", },
                     },
                     {
                         title: "Pin Video Timeline",
-                        icon: this.app.trimEditor.bottomBar.isPinned() ? "small-check" : undefined,
+                        icon: this.app.trimEditor.bottomBar.isPinned() ? CHECK_ICON : UNCHECK_ICON,
                         data: { action: "toggle-pin-timeline", },
                     },
                 ];
@@ -210,16 +213,16 @@ export class VideoTrimWindowBar extends WindowBar {
                                 icon: (
                                     this.app.vdirViewer.sortMethod == VdvSortMethod.DATE_RECENT
                                     || this.app.vdirViewer.sortMethod == VdvSortMethod.DATE_OLD
-                                ) ? "small-check" : undefined,
+                                ) ? CHECK_ICON : UNCHECK_ICON,
                                 children: [
                                     {
                                         title: "Recent",
-                                        icon: this.app.vdirViewer.sortMethod == VdvSortMethod.DATE_RECENT ? "small-check" : undefined,
+                                        icon: this.app.vdirViewer.sortMethod == VdvSortMethod.DATE_RECENT ? CHECK_ICON : UNCHECK_ICON,
                                         data: { action: "sort-date-recent", },
                                     },
                                     {
                                         title: "Old",
-                                        icon: this.app.vdirViewer.sortMethod == VdvSortMethod.DATE_OLD ? "small-check" : undefined,
+                                        icon: this.app.vdirViewer.sortMethod == VdvSortMethod.DATE_OLD ? CHECK_ICON : UNCHECK_ICON,
                                         data: { action: "sort-date-old", },
                                     },
                                 ],
@@ -229,16 +232,16 @@ export class VideoTrimWindowBar extends WindowBar {
                                 icon: (
                                     this.app.vdirViewer.sortMethod == VdvSortMethod.NAME_A_Z
                                     || this.app.vdirViewer.sortMethod == VdvSortMethod.NAME_Z_A
-                                ) ? "small-check" : undefined,
+                                ) ? CHECK_ICON : UNCHECK_ICON,
                                 children: [
                                     {
                                         title: "A-Z",
-                                        icon: this.app.vdirViewer.sortMethod == VdvSortMethod.NAME_A_Z ? "small-check" : undefined,
+                                        icon: this.app.vdirViewer.sortMethod == VdvSortMethod.NAME_A_Z ? CHECK_ICON : UNCHECK_ICON,
                                         data: { action: "sort-name-a-z", },
                                     },
                                     {
                                         title: "Z-A",
-                                        icon: this.app.vdirViewer.sortMethod == VdvSortMethod.NAME_Z_A ? "small-check" : undefined,
+                                        icon: this.app.vdirViewer.sortMethod == VdvSortMethod.NAME_Z_A ? CHECK_ICON : UNCHECK_ICON,
                                         data: { action: "sort-name-z-a", },
                                     },
                                 ],
@@ -248,16 +251,16 @@ export class VideoTrimWindowBar extends WindowBar {
                                 icon: (
                                     this.app.vdirViewer.sortMethod == VdvSortMethod.DURATION_LONG
                                     || this.app.vdirViewer.sortMethod == VdvSortMethod.DURATION_SHORT
-                                ) ? "small-check" : undefined,
+                                ) ? CHECK_ICON : UNCHECK_ICON,
                                 children: [
                                     {
                                         title: "Long",
-                                        icon: this.app.vdirViewer.sortMethod == VdvSortMethod.DURATION_LONG ? "small-check" : undefined,
+                                        icon: this.app.vdirViewer.sortMethod == VdvSortMethod.DURATION_LONG ? CHECK_ICON : UNCHECK_ICON,
                                         data: { action: "sort-duration-long", },
                                     },
                                     {
                                         title: "Short",
-                                        icon: this.app.vdirViewer.sortMethod == VdvSortMethod.DURATION_SHORT ? "small-check" : undefined,
+                                        icon: this.app.vdirViewer.sortMethod == VdvSortMethod.DURATION_SHORT ? CHECK_ICON : UNCHECK_ICON,
                                         data: { action: "sort-duration-short", },
                                     },
                                 ],
@@ -267,16 +270,16 @@ export class VideoTrimWindowBar extends WindowBar {
                                 icon: (
                                     this.app.vdirViewer.sortMethod == VdvSortMethod.SIZE_BIG
                                     || this.app.vdirViewer.sortMethod == VdvSortMethod.SIZE_SMALL
-                                ) ? "small-check" : undefined,
+                                ) ? CHECK_ICON : UNCHECK_ICON,
                                 children: [
                                     {
                                         title: "Big",
-                                        icon: this.app.vdirViewer.sortMethod == VdvSortMethod.SIZE_BIG ? "small-check" : undefined,
+                                        icon: this.app.vdirViewer.sortMethod == VdvSortMethod.SIZE_BIG ? CHECK_ICON : UNCHECK_ICON,
                                         data: { action: "sort-size-big", },
                                     },
                                     {
                                         title: "Small",
-                                        icon: this.app.vdirViewer.sortMethod == VdvSortMethod.SIZE_SMALL ? "small-check" : undefined,
+                                        icon: this.app.vdirViewer.sortMethod == VdvSortMethod.SIZE_SMALL ? CHECK_ICON : UNCHECK_ICON,
                                         data: { action: "sort-size-small", },
                                     },
                                 ],
@@ -285,11 +288,11 @@ export class VideoTrimWindowBar extends WindowBar {
                                 title: "Other",
                                 icon: (
                                     this.app.vdirViewer.sortMethod == VdvSortMethod.OTHER_RANDOM
-                                ) ? "small-check" : undefined,
+                                ) ? CHECK_ICON : UNCHECK_ICON,
                                 children: [
                                     {
                                         title: "Random",
-                                        icon: this.app.vdirViewer.sortMethod == VdvSortMethod.OTHER_RANDOM ? "small-check" : undefined,
+                                        icon: this.app.vdirViewer.sortMethod == VdvSortMethod.OTHER_RANDOM ? CHECK_ICON : UNCHECK_ICON,
                                         data: { action: "sort-random", },
                                     },
                                 ],
