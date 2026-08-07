@@ -69,8 +69,7 @@ export class VideoPlayerCanvas {
         if(width == 0 || height == 0) {
             this.textureCanvasEl.width = 1;
             this.textureCanvasEl.height = 1;
-            this.texCtx.fillStyle = "black";
-            this.texCtx.fillRect(0, 0, 1, 1);
+            this.texCtx.clearRect(0, 0, 1, 1);
         } else {
             this.textureCanvasEl.width = this.video.videoEl.videoWidth;
             this.textureCanvasEl.height = this.video.videoEl.videoHeight;
