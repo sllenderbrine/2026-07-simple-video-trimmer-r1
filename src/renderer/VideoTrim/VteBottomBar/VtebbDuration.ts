@@ -2,8 +2,13 @@ import { ConnectionOwner } from "../../../shared/EventSignals/ConnectionOwner.js
 import { HtmlConnection } from "../../../shared/EventSignals/HtmlConnection.js";
 import { Signal } from "../../../shared/EventSignals/Signal.js";
 import { clamp } from "../../../shared/Utility/MathUtility.js";
-import { formatVideoDuration } from "../../../shared/Utility/StringUtility.js";
+import { formatVideoDuration, formatVideoDurationPrecise } from "../../../shared/Utility/StringUtility.js";
 import { VteBottomBar } from "./VteBottomBar.js";
+
+export enum VtebbDurationType {
+    DEFAULT = 0,
+    PRECISE = 1,
+}
 
 export class VtebbDuration {
     durationSliderContainerEl: HTMLDivElement;
@@ -13,6 +18,7 @@ export class VtebbDuration {
     durationSliderHandleEl: HTMLDivElement;
     currentTimeEl: HTMLDivElement;
     totalTimeEl: HTMLDivElement;
+    durationType = VtebbDurationType.DEFAULT;
     seekInputEvent: Signal<[t: number]> = new Signal();
     seekStartEvent: Signal<[]> = new Signal();
     seekEndEvent: Signal<[]> = new Signal();
@@ -90,8 +96,20 @@ export class VtebbDuration {
                 let t = editor.canvas.video.videoEl.currentTime / editor.canvas.video.videoEl.duration;
                 this.durationSliderValueContentEl.style.width = `${t * 100}%`;
             }
-            this.currentTimeEl.textContent = formatVideoDuration(editor.canvas.video.videoEl.currentTime);
-            this.totalTimeEl.textContent = formatVideoDuration(editor.canvas.video.videoEl.duration);
+            this.updateTimeDisplay(editor.canvas.video.videoEl.currentTime);
         }, { owners: [ this.connectionOwner, ], initArgs: [], });
+    }
+
+    updateTimeDisplay(elapsed: number) {
+        switch(this.durationType) {
+            case VtebbDurationType.DEFAULT:
+                this.currentTimeEl.textContent = formatVideoDuration(elapsed);
+                this.totalTimeEl.textContent = formatVideoDuration(elapsed);
+                break;
+            case VtebbDurationType.PRECISE:
+                this.currentTimeEl.textContent = formatVideoDurationPrecise(elapsed);
+                this.totalTimeEl.textContent = formatVideoDurationPrecise(elapsed);
+                break;
+        }
     }
 }

@@ -8,6 +8,7 @@ import { VdvSortMethod, VideoDirectoryViewer } from "./VideoDirectoryViewer.js";
 import { VideoTrimEditor } from "./VideoTrimEditor.js";
 import { VideoTrimSettings } from "./VideoTrimSettings.js";
 import { VideoTrimWindowBar } from "./VideoTrimWindowBar.js";
+import { VtebbDurationType } from "./VteBottomBar/VtebbDuration.js";
 
 export class VideoTrimApp {
     contentEl: HTMLDivElement;
@@ -61,6 +62,7 @@ export class VideoTrimApp {
 
         vdv.videoOpenEvent.connect(vdvv => {
             this.editorOpened = true;
+            vte.canvas.fitToContainerLock = true;
             vdv.setVisible(false);
             vte.setVisible(true);
             vte.loadVideo(vdvv);
@@ -190,6 +192,14 @@ export class VideoTrimApp {
                 if(this.editorOpened) {
                     this.trimEditor.bottomBar.setPinned(!this.trimEditor.bottomBar.isPinned());
                 }
+                break;
+            case "toggle-duration-display-type":
+                if(!this.editorOpened)
+                    break;
+                if(this.trimEditor.bottomBar.duration.durationType == VtebbDurationType.PRECISE)
+                    this.trimEditor.bottomBar.duration.durationType = VtebbDurationType.DEFAULT;
+                else
+                    this.trimEditor.bottomBar.duration.durationType = VtebbDurationType.PRECISE;
                 break;
             case "editor-snapshot":
                 if(!this.editorOpened)

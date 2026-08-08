@@ -4,6 +4,7 @@ import { WindowBar, WindowBarSide } from "../Ui/WindowBar.js";
 import { WindowKeypresses } from "../Ui/WindowGlobal/WindowKeypresses.js";
 import { VdvSortMethod } from "./VideoDirectoryViewer.js";
 import type { VideoTrimApp } from "./VideoTrimApp.js";
+import { VtebbDurationType } from "./VteBottomBar/VtebbDuration.js";
 
 const CHECK_ICON = "small-check";
 const UNCHECK_ICON = "dashed-box";
@@ -183,23 +184,41 @@ export class VideoTrimWindowBar extends WindowBar {
                     {
                         title: "Take Screenshot",
                         icon: "camera",
+                        separator: true,
                         data: { action: "editor-snapshot", },
                     },
                     {
-                        title: "Loop Video",
-                        icon: this.app.trimEditor.canvas.video.isLooped() ? CHECK_ICON : UNCHECK_ICON,
-                        data: { action: "toggle-loop", },
+                        title: "Video",
+                        icon: undefined,
+                        children: [
+                            {
+                                title: "Loop Video",
+                                icon: this.app.trimEditor.canvas.video.isLooped() ? CHECK_ICON : UNCHECK_ICON,
+                                data: { action: "toggle-loop", },
+                            },
+                            {
+                                title: "Free Move",
+                                keybind: "Ctrl + 0",
+                                icon: this.app.trimEditor.canvas.fitToContainerLock ? UNCHECK_ICON : CHECK_ICON,
+                                data: { action: "toggle-free-move", },
+                            },
+                        ],
                     },
                     {
-                        title: "Free Move",
-                        keybind: "Ctrl + 0",
-                        icon: this.app.trimEditor.canvas.fitToContainerLock ? UNCHECK_ICON : CHECK_ICON,
-                        data: { action: "toggle-free-move", },
-                    },
-                    {
-                        title: "Pin Video Timeline",
-                        icon: this.app.trimEditor.bottomBar.isPinned() ? CHECK_ICON : UNCHECK_ICON,
-                        data: { action: "toggle-pin-timeline", },
+                        title: "Timeline",
+                        icon: undefined,
+                        children: [
+                            {
+                                title: "Pin Timeline",
+                                icon: this.app.trimEditor.bottomBar.isPinned() ? CHECK_ICON : UNCHECK_ICON,
+                                data: { action: "toggle-pin-timeline", },
+                            },
+                            {
+                                title: "Precise Duration Display",
+                                icon: (this.app.trimEditor.bottomBar.duration.durationType == VtebbDurationType.PRECISE) ? CHECK_ICON : UNCHECK_ICON,
+                                data: { action: "toggle-duration-display-type", },
+                            },
+                        ],
                     },
                 ];
             } else {

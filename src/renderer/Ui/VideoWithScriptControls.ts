@@ -88,6 +88,7 @@ export class VideoWithScriptControls {
     }
 
     async seekTo(t: number) {
+        t = clamp(t, this._minSeek ?? 0, this._maxSeek ?? this.videoEl.duration);
         if(!(await this._seeking.waitForTurn(t)))
             return;
         let value = this._seeking.getValue();

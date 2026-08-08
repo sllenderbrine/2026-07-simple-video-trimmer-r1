@@ -41,6 +41,14 @@ export class VideoTrimEditor {
                 } else {
                     this.canvas.pause();
                 }
+            } else if(key == "arrowleft") {
+                this.canvas.seekTo(this.canvas.video.videoEl.currentTime - 3);
+            } else if(key == "arrowright") {
+                this.canvas.seekTo(this.canvas.video.videoEl.currentTime + 3);
+            } else if(key == ",") {
+                this.canvas.seekTo(this.canvas.video.videoEl.currentTime - 1 / 60);
+            } else if(key == ".") {
+                this.canvas.seekTo(this.canvas.video.videoEl.currentTime + 1 / 60);
             }
         }, { owners: [ this.connectionOwner ] })
         new HtmlConnection(window, "wheel", (e: WheelEvent) => {

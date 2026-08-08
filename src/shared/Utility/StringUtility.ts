@@ -29,3 +29,15 @@ export function formatVideoDuration(duration: number) {
         return `${minutes}:${seconds.toString().padStart(2, "0")}`;
     }
 }
+
+export function formatVideoDurationPrecise(duration: number) {
+    let hours = Math.floor(duration / 60 / 60);
+    let minutes = pmod(Math.floor(duration / 60), 60);
+    let seconds = pmod(Math.floor(duration), 60);
+    let ms = Math.floor(duration * 1000) % 1000;
+    if(hours > 0) {
+        return `${hours}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}:${ms.toString().padStart(3, "0")}`;
+    } else {
+        return `${minutes}:${seconds.toString().padStart(2, "0")}:${ms.toString().padStart(3, "0")}`;
+    }
+}
